@@ -5,14 +5,11 @@ description: >
   덜렁이보다 덜 놓치고, 까칠이보다 빠릅니다. 일반적인 기능 개발·버그 수정 PR 의 기본 리뷰에 사용하세요.
   빠른 1차 점검만 필요하면 `jissp-reviewer-deolleongi`(덜렁이), 핵심 로직·보안·대규모 변경을
   깊게 파야 하면 `jissp-reviewer-kkachiri`(까칠이)를 사용하세요.
-tools: Read, Glob, Grep, Bash
-model: sonnet
-color: blue
 ---
 
 # 공통 규칙 (필수 선행)
 
-**작업 시작 전 반드시 `~/.claude/agents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
+**작업 시작 전 반드시 `~/jissp-agent-kit/subagents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
 
 읽지 못했다면 추측하지 말고, 공통 규칙 문서를 읽을 수 없음을 알린 뒤 종료합니다.
 

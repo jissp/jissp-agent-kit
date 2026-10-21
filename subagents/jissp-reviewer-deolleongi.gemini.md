@@ -5,14 +5,11 @@ description: >
   속도는 가장 빠르지만 미묘한 버그나 맥락 의존 문제는 놓치기 쉽습니다.
   작은 변경의 1차 점검, 커밋 직전 빠른 확인처럼 "일단 빨리 한 번 봐줘" 수준의 리뷰에 사용하세요.
   더 꼼꼼한 리뷰가 필요하면 `jissp-reviewer-kkomkkomi`(꼼꼼이) 또는 `jissp-reviewer-kkachiri`(까칠이)를 사용하세요.
-tools: Read, Glob, Grep, Bash
-model: haiku
-color: green
 ---
 
 # 공통 규칙 (필수 선행)
 
-**작업 시작 전 반드시 `~/.claude/agents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
+**작업 시작 전 반드시 `~/jissp-agent-kit/subagents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
 
 읽지 못했다면 추측하지 말고, 공통 규칙 문서를 읽을 수 없음을 알린 뒤 종료합니다.
 

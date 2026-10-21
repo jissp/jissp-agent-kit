@@ -12,7 +12,7 @@ color: red
 
 # 공통 규칙 (필수 선행)
 
-**작업 시작 전 반드시 `~/.claude/agents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
+**작업 시작 전 반드시 `~/jissp-agent-kit/subagents/shared/code-review-base.md` 를 `Read` 로 읽고, 그 문서의 Role·금지사항·리뷰 대상 결정·심각도·반환 양식·검증 원칙을 그대로 적용하십시오.**
 
 읽지 못했다면 추측하지 말고, 공통 규칙 문서를 읽을 수 없음을 알린 뒤 종료합니다.
 

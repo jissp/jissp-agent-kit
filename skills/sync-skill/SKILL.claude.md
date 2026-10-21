@@ -15,7 +15,8 @@ allowed-tools: Read, AskUserQuestion, Bash(python3:*), Bash(ls:*), Bash(readlink
 | 원본 | 반영 위치 |
 | --- | --- |
 | `jissp-agent-kit/skills/[skill-name]/` | `~/.claude/skills/[skill-name]/`, `~/.gemini/antigravity-cli/skills/[skill-name]/` |
-| `jissp-agent-kit/subagents/*.md`, `subagents/shared/*.md` | `~/.claude/agents/` (Claude 전용, 파일 단위 링크) |
+| `jissp-agent-kit/subagents/[name].claude.md`, `subagents/shared/*.md` | `~/.claude/agents/` (파일 단위 링크) |
+| `jissp-agent-kit/subagents/[name].gemini.md` | `~/.gemini/config/agents/` |
 
 동기화는 **"빠진 연결을 채우는 작업"** 입니다. 원본 내용을 고치거나, 에이전트 쪽에 있는 실제 파일을 지우지 않습니다.
 
@@ -49,9 +50,10 @@ python3 "$S" apply skill|subagents [...] [--side claude|gemini]      # 자동 �
 | --- | --- | --- |
 | `MISSING_DIR` | 에이전트 쪽에 스킬 디렉토리가 없음 | auto (디렉토리 + 링크 + manifest 생성) |
 | `MISSING_LINK` | 원본 항목의 링크가 없음 | auto |
+| `STALE_LINK` | 링크가 저장소 안의 옛 위치를 가리킴 (원본 이동·이름 변경) | auto (재연결) |
 | `MANIFEST_MISSING` | Gemini `manifest.json` 없음 | auto |
 | `MANIFEST_STALE` | manifest description 이 `SKILL.gemini.md` 와 다름 | auto (description 만 갱신) |
-| `NO_SOURCE` | 원본에 해당 에이전트용 `SKILL.*.md` 가 없음 | manual |
+| `NO_SOURCE` | 원본에 해당 에이전트용 `SKILL.*.md` (서브에이전트는 `[name].*.md`) 가 없음 | manual |
 | `NOT_LINK` | 에이전트 쪽에 링크가 아닌 실제 파일이 있음 (복제본 의심) | manual |
 | `WRONG_TARGET` / `BROKEN` | 링크가 다른 곳을 가리키거나 대상이 없음 | manual |
 | `EXTRA` | 원본에 없는 항목이 에이전트 쪽에만 있음 (서브에이전트는 원본을 가리키던 끊긴 링크만 해당, 개인 에이전트는 제외) | manual |
@@ -71,7 +73,7 @@ python3 "$S" apply skill|subagents [...] [--side claude|gemini]      # 자동 �
 - `auto` 항목이 있으면 `AskUserQuestion` 으로 반영할 스킬을 고르게 합니다. (multiSelect)
   - 한쪽 에이전트 전용으로 둔 스킬일 수 있으므로(예: 서브에이전트에 의존해 Gemini 에서 쓸 수 없는 스킬), `MISSING_DIR` 은 쪽별로 반영 여부를 확인합니다. 한쪽만 반영하면 `--side` 를 사용합니다.
 - `manual` 항목은 반영하지 않고 원인과 권장 조치만 안내합니다.
-  - `NO_SOURCE`: 해당 에이전트에서도 쓸 스킬이면 원본에 `SKILL.*.md` 를 추가해야 함 (가이드 2장 분리 규칙)
+  - `NO_SOURCE`: 해당 에이전트에서도 쓸 스킬·서브에이전트면 원본에 해당 쪽 파일을 추가해야 함 (가이드 2장·6장 분리 규칙)
   - `NOT_LINK`: 승격이 덜 된 복제본일 수 있음 → `/promote-skill` 또는 수동 정리
   - `NONSTANDARD`: 가이드 1장 구조와 다름 → 구조 정리 필요
 - 사용자 선택 없이 `apply` 를 실행하지 않습니다.
