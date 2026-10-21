@@ -25,27 +25,29 @@ jissp-agent-kit/
 스킬 본문이 `~/jissp-agent-kit/...` 경로를 직접 참조하므로 **반드시 홈 디렉토리에 clone** 합니다.
 
 ```bash
-git clone <repo-url> ~/jissp-agent-kit
+git clone https://github.com/jissp/jissp-agent-kit.git ~/jissp-agent-kit
 ```
 
-### 1. 스킬 링크
+### 1. sync-skill 연결 (처음 한 번)
+
+스킬·서브에이전트 연결은 `sync-skill` 스킬이 담당합니다. 다만 clone 직후에는 `sync-skill` 자신도 아직 연결되지 않아 호출할 수 없으므로, **처음 한 번만** 스크립트로 직접 연결합니다.
 
 ```bash
-S=~/jissp-agent-kit/skills/sync-skill/scripts/sync_skill.py
-python3 "$S" check                          # 빠진 링크 점검
-python3 "$S" apply <skill-name> [...]       # Claude·Gemini 양쪽에 링크 + Gemini manifest.json 생성
-python3 "$S" apply <skill-name> --side claude   # 한쪽만
+python3 ~/jissp-agent-kit/skills/sync-skill/scripts/sync_skill.py apply sync-skill
 ```
 
-처음 한 번 링크한 뒤에는 Claude Code 에서 `/sync-skill` 로 점검·반영할 수 있습니다. 구조 규칙은 [docs/skill-promotion-guide.md](docs/skill-promotion-guide.md) 를 참고하세요.
+### 2. 스킬·서브에이전트 연결
 
-### 2. 서브에이전트 링크
+Claude Code 를 새로 열고 실행합니다.
 
-```bash
-mkdir -p ~/.claude/agents/shared
-for f in ~/jissp-agent-kit/subagents/*.md; do ln -s "$f" ~/.claude/agents/; done
-ln -s ~/jissp-agent-kit/subagents/shared/*.md ~/.claude/agents/shared/
 ```
+/sync-skill
+```
+
+빠진 링크를 스킬별로 보여주면, 연결할 스킬을 고릅니다. 서브에이전트(`~/.claude/agents`)도 `subagents` 항목으로 함께 연결됩니다. 이후 원본에 스킬·서브에이전트를 추가하거나 description 을 바꿨을 때도 `/sync-skill` 로 반영합니다.
+
+- 한쪽 에이전트에만 쓰는 스킬은 고를 때 Claude / Gemini 중 한쪽만 선택합니다. (서브에이전트는 Claude 전용)
+- 링크 구조와 규칙은 [docs/skill-promotion-guide.md](docs/skill-promotion-guide.md) 를 참고하세요.
 
 ### 3. 개인 설정
 
@@ -86,7 +88,7 @@ security add-generic-password -a "$USER" -s "slack-user-token" -w
 | `jissp-init-agents` | 프로젝트에 멀티 에이전트 작업 환경 초기화 |
 | `skill-manual` | 스킬별 매뉴얼 조회·생성 |
 | `promote-skill` | 한쪽 전용 스킬을 이 저장소로 승격 |
-| `sync-skill` | 이 저장소의 원본을 각 에이전트에 링크로 반영 |
+| `sync-skill` | 이 저장소의 스킬·서브에이전트 원본을 각 에이전트에 링크로 반영 |
 
 명령어별 사용법은 `/skill-manual [스킬명]` 으로 볼 수 있습니다.
 
