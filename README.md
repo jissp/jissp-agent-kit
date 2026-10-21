@@ -16,7 +16,7 @@ jissp-agent-kit/
 ├── docs/skill-promotion-guide.md   # 디렉토리 구조·링크 규칙·manifest 형식
 ├── project-mapping-table.example.md  # 프로젝트 별칭 매핑 예시
 ├── jissp-document.md          # 프로젝트별 문서 디렉토리(0-jissp-docs) 규칙
-├── databases/                 # 스킬 런타임 데이터 (데이터는 git 제외)
+├── databases/                 # 스킬 런타임 데이터 (구조는 databases/README.md, 데이터는 git 제외)
 └── scripts/usage-report.py    # 스킬 실행 사용량 리포트
 ```
 
@@ -92,6 +92,47 @@ security add-generic-password -a "$USER" -s "slack-user-token" -w
 | `sync-skill` | 이 저장소의 스킬·서브에이전트 원본을 각 에이전트에 링크로 반영 |
 
 명령어별 사용법은 `/skill-manual [스킬명]` 으로 볼 수 있습니다.
+
+## 서브에이전트 목록
+
+스킬이 내부에서 호출하는 실행기입니다. 대부분 특정 스킬 전용이므로 직접 부르기보다 해당 스킬을 사용하세요.
+
+| 서브에이전트 | 호출하는 곳 | 역할 |
+| --- | --- | --- |
+| `jissp-code-analyst` | `jissp-slack-inquiry` | 요구사항 기준 읽기 전용 코드 분석, 분석 문서 작성 |
+| `jissp-doc-reviewer` | `jissp-planner` review | PRD·설계 문서·프롬프트의 모순·누락·모호함 검토 (파일 수정 없음) |
+| `jissp-gap-validator` | `jissp-task-manager`, `jissp-planner` | 기준 문서 대비 산출물의 누락을 갭 리포트로 작성 |
+| `jissp-task-implementer` | `jissp-task-manager run` (`agent` 방식) | 설계 문서 단계 단위 태스크 구현 |
+| `jissp-task-spec-extractor` | `jissp-feature-spec-generator` | 태스크별 1차 Task Spec 작성 (병렬 분석) |
+| `jissp-readability-refactorer` | `jissp-readability-refactoring` | 가독성 리팩토링 적용·설계 문서 작성 |
+| `jissp-reviewer-deolleongi` (덜렁이) | 직접 호출 | 빠른 1차 코드 리뷰 |
+| `jissp-reviewer-kkomkkomi` (꼼꼼이) | 직접 호출 | 기본 깊이의 코드 리뷰 |
+| `jissp-reviewer-kkachiri` (까칠이) | 직접 호출 | 핵심 로직·보안·대규모 변경 심층 리뷰 |
+
+리뷰어 3종은 공용 기준 `subagents/shared/code-review-base.md` 를 함께 읽습니다.
+
+## 문서 저장 위치
+
+스킬이 만드는 문서는 작업 중인 프로젝트(레포) 안의 `0-jissp-docs/` 에 저장됩니다. 세부 디렉토리와 파일명 규칙은 [jissp-document.md](jissp-document.md) 를 따릅니다.
+
+| 디렉토리 | 내용 | 주로 쓰는 스킬 |
+| --- | --- | --- |
+| `features/` | feature 단위 태스크 묶음 (`[feature]/tasks/[NN]_[task-slug]/`, 공용 `maintenance/`) | `jissp-task-manager`, `jissp-feature-spec-generator` |
+| `prds/` · `plans/` | PRD · 설계 문서 (태스크 모드에서는 태스크 디렉토리에 직접 작성) | `jissp-planner` |
+| `reviews/` · `analysis/` | 코드 리뷰 · 분석 문서 | `jissp-reviewer`, `jissp-slack-inquiry` |
+
+## 사용량 리포트
+
+Claude Code 대화 기록(`~/.claude/projects`)으로 스킬 실행 1회당 토큰·캐시·비용을 집계합니다.
+
+```bash
+python3 ~/jissp-agent-kit/scripts/usage-report.py                                # jissp-task-manager run (기본)
+python3 ~/jissp-agent-kit/scripts/usage-report.py --since 2026-10-17             # 기간 제한
+python3 ~/jissp-agent-kit/scripts/usage-report.py --skill planner-execute --args ''
+python3 ~/jissp-agent-kit/scripts/usage-report.py --detail                       # 실행별 행 출력
+```
+
+스킬명을 바꾼 경우 개명 전 이름의 실행도 함께 집계됩니다. (`SKILL_ALIASES`)
 
 ## 보안 주의사항
 
