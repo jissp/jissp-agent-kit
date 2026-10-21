@@ -55,6 +55,7 @@ task의 처리가 완료된 경우 **사용자에게 검토를 받고**, 문제�
 작업이 완료된 task는 작업 결과를 요약 보고한 뒤, 완료처리할 것인지 보완작업을 진행할 것인지 아래 선택지로 검토·승인을 받습니다.
 
 1. **`jissp-gap-validator` 에이전트**: 기준 문서(task의 README.md·prd.md·module-structure.md·architecture.md)와 작업 산출물 간의 정합성을 교차 검증하여 누락·미비 항목을 갭 리포트 파일로 받습니다.
+   - Gemini(agy) 환경에서는 `invoke_subagent` 로 `TypeName: "jissp-gap-validator"` 를 띄웁니다.
    - 호출 시 다음을 전달합니다: `review_target`(이번 작업의 산출물 경로), `reference_docs`(task의 README.md와 존재하는 태스크 문서 prd.md·module-structure.md·architecture.md), `focus`("지시문서의 요구사항이 산출물에 모두 반영되었는지"), `report_path`(`[태스크 디렉토리]/validation-[N]차.md`), `iteration`(회차). 2회차 이상이면 `previous_report_path` 도 함께 전달합니다.
    - 이 에이전트는 **리포트 파일과 경로·요약 수치만** 반환합니다. 산출물과 지시문서는 수정하지 않으므로, 보완 작업은 이 선택지로 돌아온 뒤 사용자 승인을 받아 진행합니다.
 2. **`/jissp-reviewer`**: 작업 결과를 대상으로 코드 리뷰를 진행합니다.

@@ -5,6 +5,13 @@ description: >
   속도는 가장 빠르지만 미묘한 버그나 맥락 의존 문제는 놓치기 쉽습니다.
   작은 변경의 1차 점검, 커밋 직전 빠른 확인처럼 "일단 빨리 한 번 봐줘" 수준의 리뷰에 사용하세요.
   더 꼼꼼한 리뷰가 필요하면 `jissp-reviewer-kkomkkomi`(꼼꼼이) 또는 `jissp-reviewer-kkachiri`(까칠이)를 사용하세요.
+tools:
+  - view_file
+  - find_by_name
+  - list_dir
+  - grep_search
+  - run_command
+  - command_status
 ---
 
 # 공통 규칙 (필수 선행)

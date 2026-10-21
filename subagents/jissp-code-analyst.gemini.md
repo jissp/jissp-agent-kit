@@ -5,6 +5,16 @@ description: >
   분석 결과 문서를 호출 측이 지정한 경로에 **파일로 작성**한 뒤 경로·판정·요약만 반환합니다.
   분석 절차·양식은 jissp-code-analyzer 스킬을 그대로 따르며, 코드 탐색이 메인 컨텍스트를 차지하지 않도록 분리한 실행기입니다.
   jissp-slack-inquiry 스킬에서만 사용하세요. 사용자의 직접 분석 요청에는 `/jissp-code-analyzer` 를 사용하세요.
+tools:
+  - view_file
+  - grep_search
+  - find_by_name
+  - list_dir
+  - run_command
+  - command_status
+  - write_to_file
+  - replace_file_content
+  - multi_replace_file_content
 ---
 
 # 공통 계약 (필수 선행)

@@ -4,6 +4,16 @@ description: >
   jissp-task-manager run 에서 설계 문서(architecture.md)가 있는 태스크를 §12 단계 단위로 구현하고, 검토 루프에서 승인된 보완 항목을 고칩니다.
   호출 측이 전달한 경로의 문서를 직접 읽고 코드를 작성한 뒤, 변경 파일·검증 결과·중단 사유만 반환합니다.
   jissp-task-manager run 의 구현 방식 `agent` 에서만 사용하세요. 직접 구현 요청에는 `planner-execute` 를 사용하세요.
+tools:
+  - view_file
+  - write_to_file
+  - replace_file_content
+  - multi_replace_file_content
+  - grep_search
+  - find_by_name
+  - list_dir
+  - run_command
+  - command_status
 ---
 
 # 공통 계약 (필수 선행)

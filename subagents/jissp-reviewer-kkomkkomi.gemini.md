@@ -5,6 +5,13 @@ description: >
   덜렁이보다 덜 놓치고, 까칠이보다 빠릅니다. 일반적인 기능 개발·버그 수정 PR 의 기본 리뷰에 사용하세요.
   빠른 1차 점검만 필요하면 `jissp-reviewer-deolleongi`(덜렁이), 핵심 로직·보안·대규모 변경을
   깊게 파야 하면 `jissp-reviewer-kkachiri`(까칠이)를 사용하세요.
+tools:
+  - view_file
+  - find_by_name
+  - list_dir
+  - grep_search
+  - run_command
+  - command_status
 ---
 
 # 공통 규칙 (필수 선행)

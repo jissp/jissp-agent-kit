@@ -8,6 +8,8 @@
 
 `Agent` 툴로 서브에이전트를 띄워 프롬프트를 분석합니다. 검토 관점은 `modes/review/review-guideline.md` 를 따릅니다.
 
+> **Gemini(agy) 환경**: `Agent` 툴 대신 `invoke_subagent` 로 `TypeName: "jissp-doc-reviewer"` 를 띄웁니다. 모델 지정은 생략합니다.
+
 - 프롬프트 검토는 **서브에이전트 1개**로 수행합니다. 레인을 나누지 마십시오.
 - 에이전트 타입은 **`jissp-doc-reviewer`**(`subagent_type: "jissp-doc-reviewer"`), 모델은 **`sonnet`** 을 사용합니다. 쓰기 수단이 없는 타입이라 임의 수정이 구조적으로 불가능합니다.
 - 전달 필드: `review_target` 에 **프롬프트 원문**, `guideline_path` 에 `~/jissp-agent-kit/skills/jissp-planner/modes/review/review-guideline.md` (절대 경로), `focus` 에 "모순·누락·모호함" (리뷰 설정이 있으면 "+ 리뷰 설정의 추가 검토 관점(공통)"). `code_scope` 는 전달하지 않습니다. `[리뷰 설정 문서]` 가 있으면 `reference_docs` 로 전달합니다. (추가 검토 관점은 `공통` 항목만 적용)

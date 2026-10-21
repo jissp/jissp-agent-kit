@@ -4,6 +4,13 @@ description: >
   jissp-readability-refactoring 스킬이 확정한 대상 파일에 대해 휴먼 가독성만 개선하는 리팩토링을 적용하거나 설계 문서를 작성하고,
   정해진 양식의 결과만 반환합니다. 대상 수집·모드 판별·사용자 확인은 스킬이 담당하므로 jissp-readability-refactoring 스킬에서만 사용하세요.
   사용자의 가독성 개선 요청에는 이 에이전트가 아니라 `/jissp-readability-refactoring` 을 사용하세요.
+tools:
+  - view_file
+  - write_to_file
+  - replace_file_content
+  - multi_replace_file_content
+  - run_command
+  - command_status
 ---
 
 # 공통 계약 (필수 선행)

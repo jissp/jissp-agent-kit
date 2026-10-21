@@ -5,6 +5,13 @@ description: >
   가장 많이 잡아내지만 시간이 오래 걸리고 말투가 까칠합니다.
   결제·인증·데이터 마이그레이션 같은 핵심 로직, 보안 민감 변경, 대규모 리팩토링, 머지 직전 최종 리뷰에 사용하세요.
   가벼운 리뷰는 `jissp-reviewer-deolleongi`(덜렁이)나 `jissp-reviewer-kkomkkomi`(꼼꼼이)를 사용하세요.
+tools:
+  - view_file
+  - find_by_name
+  - list_dir
+  - grep_search
+  - run_command
+  - command_status
 ---
 
 # 공통 규칙 (필수 선행)

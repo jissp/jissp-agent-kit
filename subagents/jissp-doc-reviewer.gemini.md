@@ -6,6 +6,11 @@ description: >
   반환 양식과 분량 제한을 그대로 따르며, 파일을 일절 생성·수정하지 않습니다.
   승인 게이트가 있는 검토 흐름(`jissp-planner` review 모드 등)에서 사용하세요.
   기준 문서 대비 산출물의 누락을 검증해 파일로 남겨야 하면 `jissp-gap-validator` 를 사용하세요.
+tools:
+  - view_file
+  - find_by_name
+  - list_dir
+  - grep_search
 ---
 
 검토 기준·관점·양식은 이 문서에 두지 않습니다. 호출 측이 `guideline_path` 로 전달합니다.

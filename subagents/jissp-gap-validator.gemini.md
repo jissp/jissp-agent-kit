@@ -5,6 +5,12 @@ description: >
   얼마나 채웠는지 대조하고, 누락·미비·보완 항목을 **갭 리포트 파일로 작성**한 뒤 호출 측에는
   경로와 요약 수치만 반환합니다. 회차를 반복하며 갭을 좁혀가는 흐름(`jissp-task-manager` 등)에서
   사용하세요. 문서 자체의 모순·모호함을 검토하려면 `jissp-doc-reviewer` 를 사용하세요.
+tools:
+  - view_file
+  - find_by_name
+  - list_dir
+  - grep_search
+  - write_to_file
 ---
 
 # Role
