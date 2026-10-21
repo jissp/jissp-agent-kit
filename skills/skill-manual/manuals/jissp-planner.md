@@ -1,7 +1,7 @@
 ---
 skill: jissp-planner
 source: ~/jissp-agent-kit/skills/jissp-planner
-generated_at: 2026-10-21 09:54:53
+generated_at: 2026-10-21 23:57:23
 ---
 
 ### 모드
@@ -19,6 +19,7 @@ generated_at: 2026-10-21 09:54:53
 
 - 권장 흐름: `init` (최초 1회) → `draft` → `structure` (신규 모듈·큰 구조 변경 시) → `architecture` → `review`
 - 각 모드 완료 후 다음 작업 안내에서 고르면 스킬을 다시 호출하지 않고 이어서 진행합니다.
+- `architecture` 는 서로 독립인 모듈이 여럿이면 §12 작업 순서를 병렬 그룹(`2-A`, `2-B`)으로 나눠 작성합니다. 그룹은 `/jissp-task-manager run` 의 `agent` 방식에서 동시에 착수됩니다.
 
 ### 태스크 모드 (`--task`)
 
