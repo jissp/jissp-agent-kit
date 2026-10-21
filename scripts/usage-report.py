@@ -39,6 +39,7 @@ IMPL_AGENT = 'jissp-task-implementer'
 IMPL_SKILL = 'jissp-task-implement'
 GUIDELINE = 'planner-execute/guideline.md'
 REVIEW_AGENTS = ('jissp-doc-reviewer', 'jissp-gap-validator', 'jissp-doc-reviewer-report')  # 마지막은 개명 전 이름 (과거 세션 집계용)
+SKILL_ALIASES = {'jissp-task-manager': ('jissp-task-manager-v2',)}  # 개명 전 이름 (과거 세션 집계용)
 REVIEW_BUCKETS = ((0, 0, '0'), (1, 1, '1'), (2, 2, '2'), (3, 4, '3-4'), (5, None, '5+'))
 
 
@@ -99,15 +100,15 @@ def is_slash_command(entry):
     return is_human_input(entry) and '<command-name>/' in text_of(entry)
 
 
-def is_run_start(entry, skill, args_prefix):
+def is_run_start(entry, skills, args_prefix):
     for block in tool_uses(entry):
         payload = block.get('input') or {}
-        if block.get('name') == 'Skill' and payload.get('skill') == skill \
+        if block.get('name') == 'Skill' and payload.get('skill') in skills \
                 and (payload.get('args') or '').startswith(args_prefix):
             return True
     if is_human_input(entry):
         text = text_of(entry)
-        if f'<command-name>/{skill}</command-name>' in text \
+        if any(f'<command-name>/{skill}</command-name>' in text for skill in skills) \
                 and f'<command-args>{args_prefix}' in text:
             return True
     return False
@@ -170,12 +171,13 @@ def load_subagents(session_path):
 
 
 def collect_runs(skill, args_prefix, since, end_at):
+    skills = (skill,) + SKILL_ALIASES.get(skill, ())
     is_run_end = is_human_input if end_at == 'human' else is_slash_command
     runs = []
     seen_starts = set()  # resume 한 세션은 이전 기록을 복사하므로 같은 실행이 두 파일에 존재한다.
     for session_path in glob.glob(f'{ROOT}/*/*.jsonl'):
         entries = load_jsonl(session_path)
-        starts = [i for i, e in enumerate(entries) if is_run_start(e, skill, args_prefix)]
+        starts = [i for i, e in enumerate(entries) if is_run_start(e, skills, args_prefix)]
         if not starts:
             continue
         subagents = load_subagents(session_path)
