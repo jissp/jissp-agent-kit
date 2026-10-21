@@ -155,7 +155,7 @@ ln -s "$BASE/[보조 리소스]"   "$G/[보조 리소스]"
 ```
 jissp-agent-kit/subagents/
 ├── [name].claude.md         ← Claude 전용 (tools·model·color 포함)
-├── [name].gemini.md         ← Gemini 전용 (tools·model·color 제거)
+├── [name].gemini.md         ← Gemini 전용 (tools 는 agy 도구명으로 변환, model·color 제거)
 └── shared/                  ← 여러 서브에이전트가 함께 읽는 공용 문서 (frontmatter 없음)
     └── *.md
 
@@ -168,7 +168,20 @@ jissp-agent-kit/subagents/
 ```
 
 - Gemini(agy)는 `~/.gemini/config/agents/` 의 Markdown 파일을 커스텀 에이전트로 읽습니다. `agy agents` 로 인식 여부를 확인할 수 있습니다.
-- **`.gemini.md` 에서 `tools` / `model` / `color` 를 반드시 제거합니다.** Claude 원본을 그대로 두면 agy 가 에이전트로 인식하지 않습니다.
+- **`.gemini.md` 의 frontmatter 는 agy 형식으로 바꿉니다.** Claude 원본을 그대로 두면 agy 가 에이전트로 인식하지 않습니다. (`tools: Read, Grep` 같은 문자열 형식과 `model: sonnet` 같은 Claude 모델명을 거부)
+  - `model` / `color` 는 제거합니다.
+  - `tools` 는 agy 도구 이름의 **YAML 목록**으로 변환해 같은 권한 범위를 유지합니다.
+
+    | Claude | agy |
+    | --- | --- |
+    | `Read` | `view_file` |
+    | `Glob` | `find_by_name`, `list_dir` |
+    | `Grep` | `grep_search` |
+    | `Bash` | `run_command`, `command_status` |
+    | `Write` | `write_to_file` |
+    | `Edit` | `replace_file_content`, `multi_replace_file_content` |
+- **호출 방식**: Claude 는 `Agent` 툴의 `subagent_type`, Gemini(agy) 는 `invoke_subagent` 의 `TypeName` 으로 같은 이름을 지정합니다. 병렬 실행은 `Subagents` 배열에 여러 항목을 넣고, 이어서 맡길 때는 `send_message` 에 `conversationId` 를 넘깁니다. agy 는 호출 시 모델을 고를 수 없습니다.
+- 스킬 문서에서 서브에이전트를 부르는 지시는 두 에이전트가 함께 읽으므로, Claude 방식 옆에 Gemini(agy) 방식을 함께 적습니다.
 - 본문은 두 파일이 동일합니다. 공용 문서는 에이전트 쪽 링크가 아니라 **저장소 경로**(`~/jissp-agent-kit/subagents/shared/...`)로 참조해, 한쪽 에이전트만 설치된 환경에서도 읽히게 합니다.
 - 한쪽 에이전트에서만 쓰는 서브에이전트는 해당 쪽 파일만 둡니다. 다른 쪽은 `sync-skill` 점검에서 `NO_SOURCE` 로 표시됩니다.
 
