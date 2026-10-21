@@ -145,3 +145,33 @@ ln -s "$BASE/[보조 리소스]"   "$G/[보조 리소스]"
 - **복제본을 남기지 않습니다.** 에이전트 쪽에 실제 파일이 남으면 원본과 갈라져 유지보수 지점이 두 곳이 됩니다.
 - **삭제 전에 복사 성공을 확인합니다.** 원본 생성이 완료된 것을 확인한 뒤에만 에이전트 쪽 복제본을 제거합니다.
 - 스킬명(디렉토리명)은 세 위치에서 **완전히 동일**해야 합니다.
+
+## 6. 서브에이전트
+
+서브에이전트도 스킬과 같은 방식으로 원본을 `jissp-agent-kit/subagents/` 한 곳에 두고, 각 에이전트 쪽은 심볼릭 링크로 원본을 바라봅니다.
+
+### 디렉토리 구조
+
+```
+jissp-agent-kit/subagents/
+├── [name].claude.md         ← Claude 전용 (tools·model·color 포함)
+├── [name].gemini.md         ← Gemini 전용 (tools·model·color 제거)
+└── shared/                  ← 여러 서브에이전트가 함께 읽는 공용 문서 (frontmatter 없음)
+    └── *.md
+
+~/.claude/agents/
+├── [name].md       → jissp-agent-kit/subagents/[name].claude.md   (symlink)
+└── shared/*.md     → jissp-agent-kit/subagents/shared/*.md        (symlink, 파일 단위)
+
+~/.gemini/config/agents/
+└── [name].md       → jissp-agent-kit/subagents/[name].gemini.md   (symlink)
+```
+
+- Gemini(agy)는 `~/.gemini/config/agents/` 의 Markdown 파일을 커스텀 에이전트로 읽습니다. `agy agents` 로 인식 여부를 확인할 수 있습니다.
+- **`.gemini.md` 에서 `tools` / `model` / `color` 를 반드시 제거합니다.** Claude 원본을 그대로 두면 agy 가 에이전트로 인식하지 않습니다.
+- 본문은 두 파일이 동일합니다. 공용 문서는 에이전트 쪽 링크가 아니라 **저장소 경로**(`~/jissp-agent-kit/subagents/shared/...`)로 참조해, 한쪽 에이전트만 설치된 환경에서도 읽히게 합니다.
+- 한쪽 에이전트에서만 쓰는 서브에이전트는 해당 쪽 파일만 둡니다. 다른 쪽은 `sync-skill` 점검에서 `NO_SOURCE` 로 표시됩니다.
+
+### 연결
+
+링크는 직접 만들지 않고 `/sync-skill subagents` (또는 `sync_skill.py apply subagents`) 로 반영합니다. 원본 파일명이 바뀌어 저장소 안의 옛 위치를 가리키는 링크도 함께 다시 연결됩니다.
