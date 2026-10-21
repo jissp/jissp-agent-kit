@@ -1,0 +1,14 @@
+# AGENTS.md
+
+Shared entry point for AI agents in the {{PROJECT_NAME}} repository.
+{{PROJECT_DESCRIPTION}}
+
+## claude
+
+@./.agents/README.md
+@./.agents/README.local.md
+
+## gemini
+
+@[Shared AI Guide](./.agents/README.md)
+@[Personalization Guide](./.agents/README.local.md)

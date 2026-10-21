@@ -1,0 +1,30 @@
+# Shared AI Guide
+
+This file is **mandatory reading** and **must be followed without exception**.
+Do **not** infer, assume, or invent any behavior beyond what is explicitly stated.
+
+- **Stack**: {{TECH_STACK_SUMMARY}}
+- **Base path**: All file paths specified below are **relative to the project root**.
+
+# Detailed Rule Documents
+
+Do **not** load the following documents automatically. Read them **on-demand only** when the corresponding task begins
+(e.g., design, implementation, review).
+
+| Document          | Path                                 | When to Read                                           |
+|-------------------|--------------------------------------|--------------------------------------------------------|
+| Architecture      | `.agents/rules/ARCHITECTURE.md`      | Layer design, event & transaction handling             |
+| Conventions       | `.agents/rules/CONVENTION.md`        | File/class naming, implementation patterns, Swagger    |
+| Platform Overview | `.agents/docs/OVERVIEW.md`           | Platform project responsibilities                     |
+| Tech Stack        | `.agents/docs/TECHSTACK.md`          | Infrastructure & library selection                     |
+| Glossary          | `.agents/docs/GLOSSARY.md`           | Domain terminology check                               |
+
+# Clarification & Interview Policy
+
+If the prompt or requirements are unclear, ambiguous, or missing necessary information, the agent must **not** make
+assumptions. Instead, use the available user question tool (e.g., `AskUserQuestionTool`, `ask_question`) or interactive
+interview before proceeding.
+
+- Questions must **not** be generic, obvious, or superficial.
+- Take a deep, investigative approach, asking precise and meaningful questions with recommended options or rationale.
+- Continue the interview iteratively until sufficient information is obtained to complete the task with confidence and accuracy.
