@@ -16,7 +16,7 @@ description: >
 | 구분 | 대상 | 저장 위치 | 담당 스킬 |
 |---|---|---|---|
 | **TODO** | 아직 어느 프로젝트에서 처리할지 정해지지 않은 업무 | 전역 저장소 `~/jissp-agent-kit/databases/todos` | 이 스킬 |
-| **태스크(Task)** | 특정 프로젝트에서 처리하는 작업 | `[프로젝트 경로]/0-jissp-docs/projects` | `/jissp-task-manager` |
+| **태스크(Task)** | 특정 프로젝트에서 처리하는 작업 | `[프로젝트 경로]/0-jissp-docs/features` | `/jissp-task-manager` |
 
 - 이 스킬은 **어느 디렉토리에서 호출해도 동작**합니다. TODO는 항상 전역 저장소에만 기록하며, 현재 작업 디렉토리에는 아무것도 만들지 않습니다.
 - TODO가 프로젝트로 **할당**되면 태스크로 전환되고, TODO 목록에서는 빠집니다. (할당 절차는 `docs/assign.md`)

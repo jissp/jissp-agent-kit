@@ -6,7 +6,7 @@
 set -euo pipefail
 
 DOCS="${TM_DOCS:-$PWD/0-jissp-docs}"
-ROOT="$DOCS/projects"
+ROOT="$DOCS/features"
 STATUSES="backlog wait processing completed holding"
 RESERVED="maintenance backlog holding completed all"
 
@@ -43,17 +43,17 @@ append_line() { # <file> <heading> <line> : 이력 절(파일의 마지막 절)�
   echo "$3" >> "$1"
 }
 task_log() { append_line "$1" "## 작업 이력" "$2"; }
-project_log() { append_line "$1" "## 이력" "$2"; }
+feature_log() { append_line "$1" "## 이력" "$2"; }
 
 # ---------- 경로 ----------
 
-project_dir() { # <slug> : 진행 중 → 완료 순으로 찾음
+feature_dir() { # <slug> : 진행 중 → 완료 순으로 찾음
   if [ -d "$ROOT/$1" ]; then echo "$ROOT/$1"
   elif [ -d "$ROOT/_completed/$1" ]; then echo "$ROOT/_completed/$1"
   else return 1; fi
 }
 
-task_readmes() { # <project_dir> <scope> : scope = active|backlog|holding|completed|all
+task_readmes() { # <feature_dir> <scope> : scope = active|backlog|holding|completed|all
   local d="$1/tasks" scope="$2" slug; slug="$(basename "$1")"
   [ -d "$d" ] || return 0
   if [ "$slug" = "maintenance" ]; then
@@ -76,14 +76,14 @@ task_readmes() { # <project_dir> <scope> : scope = active|backlog|holding|comple
   fi
 }
 
-task_line() { # <README> → project/dir  status  name  updated_at
+task_line() { # <README> → feature/dir  status  name  updated_at
   local f="$1" dir proj
-  dir="$(dirname "$f")"; proj="$(fm_get "$f" project)"
+  dir="$(dirname "$f")"; proj="$(fm_get "$f" feature)"
   [ -n "$proj" ] || proj="$(basename "$(dirname "$(dirname "$dir")")")"
   printf '%s\t%s\t%s\t%s\n' "$(rel "$dir")" "$(fm_get "$f" status)" "$(fm_get "$f" name)" "$(fm_get "$f" updated_at)"
 }
 
-max_number() { # <project_dir> : 디렉토리 번호와 README 이력의 삭제 기록 중 최댓값
+max_number() { # <feature_dir> : 디렉토리 번호와 README 이력의 삭제 기록 중 최댓값
   local d="$1" m=0 n
   for n in $( { ls -1 "$d/tasks" 2>/dev/null; grep -oE '태스크 삭제: [0-9]+_' "$d/README.md" 2>/dev/null | grep -oE '[0-9]+'; } | grep -oE '^[0-9]+' ); do
     n=$((10#$n)); [ "$n" -gt "$m" ] && m=$n
@@ -107,17 +107,17 @@ updated_at: $t
 
 ## 개요
 
-feature 프로젝트에 속하지 않는 단발성 작업을 관리하는 공용 프로젝트입니다.
+어떤 feature에도 속하지 않는 단발성 작업을 관리하는 공용 버킷입니다.
 
 ## 이력
 
-- $t 프로젝트 생성
+- $t 생성
 EOF
 }
 
 # ---------- 명령 ----------
 
-cmd_projects() { # [all] → slug  status  done/total  next_wait
+cmd_features() { # [all] → slug  status  done/total  next_wait
   [ -d "$ROOT" ] || return 0
   local d slug f total done next s
   for d in "$ROOT"/*/ ${1:+"$ROOT"/_completed/*/}; do
@@ -138,11 +138,11 @@ cmd_projects() { # [all] → slug  status  done/total  next_wait
   done
 }
 
-cmd_tasks() { # [project] [scope]
+cmd_tasks() { # [feature] [scope]
   local p="${1:-}" scope="${2:-}" d f
   case "$p" in backlog|holding|completed|all) scope="$p"; p="" ;; esac
   if [ -n "$p" ]; then
-    d="$(project_dir "$p")" || die "project not found: $p"
+    d="$(feature_dir "$p")" || die "feature not found: $p"
     if [ -z "$scope" ]; then [ "$p" = maintenance ] && scope=active || scope=all; fi
     task_readmes "$d" "$scope" | while read -r f; do task_line "$f"; done
   else
@@ -154,11 +154,11 @@ cmd_tasks() { # [project] [scope]
   fi
 }
 
-cmd_find() { # <query> [project] → 일치 태스크 디렉토리 (탐색 순서대로)
+cmd_find() { # <query> [feature] → 일치 태스크 디렉토리 (탐색 순서대로)
   local q="$1" p="${2:-}" d f base num
   num=""; [[ "$q" =~ ^[0-9]+$ ]] && num="$((10#$q))"
   {
-    if [ -n "$p" ]; then d="$(project_dir "$p")" || die "project not found: $p"; task_readmes "$d" all
+    if [ -n "$p" ]; then d="$(feature_dir "$p")" || die "feature not found: $p"; task_readmes "$d" all
     else
       for d in "$ROOT"/*/; do case "$(basename "$d")" in _completed|maintenance) ;; *) task_readmes "${d%/}" all ;; esac; done
       [ -d "$ROOT/maintenance" ] && for s in active backlog holding completed; do task_readmes "$ROOT/maintenance" "$s"; done
@@ -171,12 +171,12 @@ cmd_find() { # <query> [project] → 일치 태스크 디렉토리 (탐색 순�
   done
 }
 
-cmd_new_project() { # <slug> [title]
+cmd_new_feature() { # <slug> [title]
   local slug="$1" title="${2:-$1}" d t
   [[ "$slug" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "slug must be kebab-case: $slug"
   for r in $RESERVED; do [ "$slug" = "$r" ] && die "reserved slug: $slug"; done
   [ -e "$ROOT/$slug" ] && die "already exists: $(rel "$ROOT/$slug")"
-  [ -e "$ROOT/_completed/$slug" ] && die "completed project exists (reopen instead): $(rel "$ROOT/_completed/$slug")"
+  [ -e "$ROOT/_completed/$slug" ] && die "completed feature exists (reopen instead): $(rel "$ROOT/_completed/$slug")"
   ensure_maintenance
   d="$ROOT/$slug"; mkdir -p "$d/docs" "$d/tasks"; t="$(now)"
   cat > "$d/README.md" <<EOF
@@ -205,17 +205,17 @@ updated_at: $t
 
 ## 이력
 
-- $t 프로젝트 생성
+- $t feature 생성
 EOF
   rel "$d"
 }
 
-cmd_new_task() { # <project> <slug> [wait|backlog]
+cmd_new_task() { # <feature> <slug> [wait|backlog]
   local p="$1" slug="$2" st="${3:-wait}" d dir t
   [[ "$slug" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "slug must be kebab-case: $slug"
   [ "$st" = wait ] || [ "$st" = backlog ] || die "initial status must be wait|backlog"
   ensure_maintenance
-  [ -d "$ROOT/$p" ] || die "project not found (or completed): $p"
+  [ -d "$ROOT/$p" ] || die "feature not found (or completed): $p"
   d="$ROOT/$p"; t="$(now)"
   if [ "$p" = maintenance ]; then
     dir="$d/tasks/$( [ "$st" = backlog ] && echo backlog/ )$(date +%Y%m%d_%H%M%S)_$slug"
@@ -227,10 +227,10 @@ cmd_new_task() { # <project> <slug> [wait|backlog]
   cat > "$dir/README.md" <<EOF
 ---
 name: $slug
-project: $p
+feature: $p
 status: $st
 completed_at:
-source_type: feature
+source_type: name
 created_at: $t
 updated_at: $t
 ---
@@ -241,7 +241,7 @@ updated_at: $t
 
 - $t 등록 ($st)
 EOF
-  [ "$p" = maintenance ] || project_log "$d/README.md" "- $t 태스크 등록: $(basename "$dir")"
+  [ "$p" = maintenance ] || feature_log "$d/README.md" "- $t 태스크 등록: $(basename "$dir")"
   rel "$dir"
 }
 
@@ -250,7 +250,7 @@ cmd_set_status() { # <task_dir> <status> [reason] → 새 경로
   [[ "$dir" = /* ]] || dir="$DOCS/$dir"
   f="$dir/README.md"; [ -f "$f" ] || die "task not found: $1"
   echo " $STATUSES " | grep -q " $new " || die "invalid status: $new"
-  case "$dir" in "$ROOT"/_completed/*) die "task in completed project (reopen first)";; esac
+  case "$dir" in "$ROOT"/_completed/*) die "task in completed feature (reopen first)";; esac
   old="$(fm_get "$f" status)"; t="$(now)"
   fm_set "$f" status "$new"; fm_set "$f" updated_at "$t"
   if [ "$new" = completed ]; then fm_set "$f" completed_at "$t"; else fm_set "$f" completed_at ""; fi
@@ -274,48 +274,48 @@ cmd_set_status() { # <task_dir> <status> [reason] → 새 경로
   rel "$dir"
 }
 
-cmd_project_status() { # <slug> <processing|holding|completed> → 새 경로
+cmd_feature_status() { # <slug> <processing|holding|completed> → 새 경로
   local slug="$1" new="$2" d t
   [ "$slug" = maintenance ] && die "maintenance has no status"
-  case "$new" in processing|holding|completed) ;; *) die "invalid project status: $new";; esac
-  d="$(project_dir "$slug")" || die "project not found: $slug"
+  case "$new" in processing|holding|completed) ;; *) die "invalid feature status: $new";; esac
+  d="$(feature_dir "$slug")" || die "feature not found: $slug"
   t="$(now)"
   if [ "$new" = completed ] && [ "$d" = "$ROOT/$slug" ]; then
     mkdir -p "$ROOT/_completed"; mv "$d" "$ROOT/_completed/"; d="$ROOT/_completed/$slug"
   elif [ "$new" != completed ] && [ "$d" = "$ROOT/_completed/$slug" ]; then
-    [ -e "$ROOT/$slug" ] && die "active project with same slug exists"
+    [ -e "$ROOT/$slug" ] && die "active feature with same slug exists"
     mv "$d" "$ROOT/"; d="$ROOT/$slug"
   fi
   local old; old="$(fm_get "$d/README.md" status)"
   fm_set "$d/README.md" status "$new"; fm_set "$d/README.md" updated_at "$t"
-  project_log "$d/README.md" "- $t 프로젝트 상태 $old → $new"
+  feature_log "$d/README.md" "- $t feature 상태 $old → $new"
   rel "$d"
 }
 
 usage() {
   cat <<'EOF'
 usage: tm.sh <command> [args]
-  projects [all]                          slug  status  done/total  next_wait
-  tasks [project] [active|backlog|holding|completed|all]
-                                          project/tasks/dir  status  name  updated_at
-  find <query> [project]                  일치 태스크 경로 (번호·slug 일부)
-  new-project <slug> [title]              프로젝트 생성 → 경로
-  new-task <project> <slug> [wait|backlog]  태스크 생성 → 경로
+  features [all]                          slug  status  done/total  next_wait
+  tasks [feature] [active|backlog|holding|completed|all]
+                                          feature/tasks/dir  status  name  updated_at
+  find <query> [feature]                  일치 태스크 경로 (번호·slug 일부)
+  new-feature <slug> [title]              feature 생성 → 경로
+  new-task <feature> <slug> [wait|backlog]  태스크 생성 → 경로
   set-status <task_path> <status> [reason]  status/updated_at/completed_at/이력 갱신 + maintenance 이동 → 새 경로
-  project-status <slug> <processing|holding|completed>  → 새 경로
+  feature-status <slug> <processing|holding|completed>  → 새 경로
 경로 인자·출력은 [Jissp 문서](0-jissp-docs) 기준 상대 경로입니다.
 EOF
 }
 
 cmd="${1:-}"; [ $# -gt 0 ] && shift
 case "$cmd" in
-  projects) cmd_projects "$@" ;;
+  features) cmd_features "$@" ;;
   tasks) cmd_tasks "$@" ;;
   find) [ $# -ge 1 ] || die "find <query>"; cmd_find "$@" ;;
-  new-project) [ $# -ge 1 ] || die "new-project <slug>"; cmd_new_project "$@" ;;
-  new-task) [ $# -ge 2 ] || die "new-task <project> <slug>"; cmd_new_task "$@" ;;
+  new-feature) [ $# -ge 1 ] || die "new-feature <slug>"; cmd_new_feature "$@" ;;
+  new-task) [ $# -ge 2 ] || die "new-task <feature> <slug>"; cmd_new_task "$@" ;;
   set-status) [ $# -ge 2 ] || die "set-status <task_path> <status>"; cmd_set_status "$@" ;;
-  project-status) [ $# -ge 2 ] || die "project-status <slug> <status>"; cmd_project_status "$@" ;;
+  feature-status) [ $# -ge 2 ] || die "feature-status <slug> <status>"; cmd_feature_status "$@" ;;
   ""|-h|--help|help) usage ;;
   *) die "unknown command: $cmd" ;;
 esac

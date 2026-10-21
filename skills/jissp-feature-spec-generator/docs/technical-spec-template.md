@@ -1,7 +1,7 @@
 # [Technical Specification] {Feature Name}
 
 > **문서 버전**: 1.0.0 (Final Spec)  
-> **기준 프로젝트**: `{project_name}`  
+> **기준 feature**: `{feature_name}`  
 > **생성 방식**: SDD (Spec Driven Development) 기반 최종 형상 추출  
 > **문서 목적**: 본 문서는 시스템 구현 언어나 특정 프레임워크(NestJS, Spring, Django 등)에 종속되지 않고, 도메인 데이터 모델, 상태 머신, 인터페이스 계약 및 시스템 연동 규격을 엄밀하게 정의한 기술 사양서입니다.
 

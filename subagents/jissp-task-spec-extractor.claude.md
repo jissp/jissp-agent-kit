@@ -2,7 +2,7 @@
 name: jissp-task-spec-extractor
 description: >
   단일 태스크 디렉토리(prd.md, architecture.md 등)를 읽어 프레임워크 종속성을 배제한 1차 Task Spec 문서를 지정된 경로에 직접 파일로 작성하고 요약 메타데이터만 반환합니다.
-  jissp-project-spec-generator 스킬에서 태스크별 병렬 분석(Map 단계)용으로 사용합니다.
+  jissp-feature-spec-generator 스킬에서 태스크별 병렬 분석(Map 단계)용으로 사용합니다.
 tools: Read, Glob, Grep, Write
 model: sonnet
 color: cyan
@@ -14,7 +14,7 @@ color: cyan
 
 **작업 시작 전 반드시 아래 템플릿 파일을 읽고, 그 양식과 구조를 그대로 적용하여 문서를 작성하십시오.**
 
-- `~/jissp-agent-kit/skills/jissp-project-spec-generator/docs/task-spec-template.md`
+- `~/jissp-agent-kit/skills/jissp-feature-spec-generator/docs/task-spec-template.md`
 
 # 입력 (호출 측이 전달)
 

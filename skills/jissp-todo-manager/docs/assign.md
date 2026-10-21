@@ -60,12 +60,12 @@ TODO는 프로젝트(feature) 단위로 묶이지 않은 단발성 업무이므�
    TM_DOCS="[프로젝트 경로]/0-jissp-docs" ~/jissp-agent-kit/skills/jissp-task-manager/scripts/tm.sh new-task maintenance [TODO name] [wait|backlog]
    ```
    - 출력된 경로(`[프로젝트 경로]/0-jissp-docs` 기준 상대 경로)가 생성된 태스크 디렉토리입니다. 실패(`error: ...`)하면 그대로 보고하고 중단합니다.
-   - 스크립트가 frontmatter(`name`·`project`·`status`·`created_at`·`updated_at`)·제목·"작업 이력" 첫 줄을 채웁니다.
+   - 스크립트가 frontmatter(`name`·`feature`·`status`·`created_at`·`updated_at`)·제목·"작업 이력" 첫 줄을 채웁니다.
 2. 생성된 태스크 `README.md` 를 아래와 같이 채웁니다.
 
    | 태스크 README 항목 | 값 |
    |---|---|
-   | `source_type` | TODO의 `source_type` 승계 (`manual`은 `feature`로 기록) |
+   | `source_type` | TODO의 `source_type` 승계 (`manual`은 `name`으로 기록) |
    | `source` | TODO의 `source` (없으면 TODO 디렉토리 절대 경로). 스크립트가 만들지 않는 필드이므로 `source_type` 아래에 추가합니다 |
    | 제목 | TODO의 제목 |
    | 본문 | TODO README의 본문을 **내용 그대로 이관** (`## 이력` 섹션은 제외). README 스키마의 "개요"·"요구사항" 절에 나눠 담을 수 있으면 나눠 담되 문장을 바꾸지 않습니다. "작업 이력" 절 **위**에 작성해 "작업 이력"이 마지막 절로 남게 합니다 |
@@ -96,7 +96,7 @@ frontmatter 갱신과 디렉토리 이동을 **함께** 처리합니다.
 - 다음 단계 안내:
   1. **`/jissp-planner [draft|structure|architecture] --task maintenance/[태스크 디렉토리명]`**: 태스크 문서(PRD·구조·설계) 작성
   2. **`/jissp-task-manager run maintenance [태스크 디렉토리명]`**: 해당 프로젝트에서 태스크 실행
-  - feature 프로젝트로 옮기려면 `/jissp-task-manager` 에 "다른 프로젝트로 옮겨줘" 로 요청하도록 안내합니다.
+  - feature로 옮기려면 `/jissp-task-manager` 에 "다른 feature로 옮겨줘" 로 요청하도록 안내합니다.
   - 태스크 실행은 **대상 프로젝트 디렉토리 안에서** 해야 함을 함께 알립니다. (필요 시 `/add-project [별칭]`으로 디렉토리 추가)
 
 ## 주의

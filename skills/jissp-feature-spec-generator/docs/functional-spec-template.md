@@ -1,7 +1,7 @@
 # [Functional Specification] {Feature Name}
 
 > **문서 버전**: 1.0.0 (Final Spec)  
-> **기준 프로젝트**: `{project_name}`  
+> **기준 feature**: `{feature_name}`  
 > **생성 방식**: SDD (Spec Driven Development) 기반 최종 형상 추출  
 > **문서 목적**: 본 문서는 시스템 구현 언어나 기술 스택과 무관하게, 해당 Feature가 비즈니스 관점에서 "무엇을", "어떤 규칙과 시나리오로" 수행하는지 정의한 기능 사양서입니다.
 

@@ -27,11 +27,11 @@ generated_at: 2026-10-21 23:57:23
 
 | 용도 | 명령어 |
 |---|---|
-| 태스크 PRD | `/jissp-planner draft --task [project]/[task]` → `prd.md` |
-| 태스크 구조 문서 | `/jissp-planner structure --task [project]/[task]` → `module-structure.md` |
-| 태스크 설계 문서 | `/jissp-planner architecture --task [project]/[task]` → `architecture.md` |
-| 태스크 설계 수정 | `/jissp-planner architecture --task [project]/[task] revise [변경 요청]` — 문서 경로 생략 가능 |
-| 태스크 문서 검토 | `/jissp-planner review --task [project]/[task]` — 태스크 문서 전부 검토 |
+| 태스크 PRD | `/jissp-planner draft --task [feature]/[task]` → `prd.md` |
+| 태스크 구조 문서 | `/jissp-planner structure --task [feature]/[task]` → `module-structure.md` |
+| 태스크 설계 문서 | `/jissp-planner architecture --task [feature]/[task]` → `architecture.md` |
+| 태스크 설계 수정 | `/jissp-planner architecture --task [feature]/[task] revise [변경 요청]` — 문서 경로 생략 가능 |
+| 태스크 문서 검토 | `/jissp-planner review --task [feature]/[task]` — 태스크 문서 전부 검토 |
 
 - `[task]`: 디렉토리명 전체 · 번호(`03`) · slug 일부
 - 입력을 생략하면 태스크의 `prd.md` 또는 `README.md` 를 입력으로 사용합니다.

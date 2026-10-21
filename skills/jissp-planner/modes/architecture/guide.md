@@ -173,9 +173,9 @@ architecture 모드가 작성하는 문서는 **"코드를 미리 써두는 문�
 3. **작업 착수** — 확정된 설계 문서를 기준으로 구현을 시작합니다.
    → 설계 문서 경로를 args로 전달하여 `/planner-execute` 스킬을 호출합니다.
 4. **태스크로 등록** — 설계 문서와 관련 문서(PRD·구조 문서)를 하나의 태스크로 묶어 등록하고, 이후 `/jissp-task-manager run` 으로 실행합니다.
-   → 아래 **태스크 등록 인계 args** 를 args로 하여 `/jissp-task-manager add [project]` 를 호출합니다. (`[project]` 는 사용자가 등록할 프로젝트를 함께 말한 경우의 slug입니다. 말하지 않았으면 생략하며, 이 경우 maintenance에 등록됩니다)
+   → 아래 **태스크 등록 인계 args** 를 args로 하여 `/jissp-task-manager add [feature]` 를 호출합니다. (`[feature]` 는 사용자가 등록할 feature를 함께 말한 경우의 slug입니다. 말하지 않았으면 생략하며, 이 경우 maintenance에 등록됩니다)
 
-- **태스크 모드(`--task`)** 에서는 4번 대신 **태스크 실행** — `/jissp-task-manager run [project] [task]` 로 이 태스크를 실행합니다 — 을 제시하고, 1~3번도 `--task` 를 유지합니다. (SKILL.md "태스크 모드")
+- **태스크 모드(`--task`)** 에서는 4번 대신 **태스크 실행** — `/jissp-task-manager run [feature] [task]` 로 이 태스크를 실행합니다 — 을 제시하고, 1~3번도 `--task` 를 유지합니다. (SKILL.md "태스크 모드")
 - 위 1·2번 후속 검토는 **Part A를 대상으로 수행하는 것이 원칙**임을 함께 안내합니다. (Part B는 실행 참고 자료이므로 검토 대상이 아닙니다.)
 - 사용자가 선택한 항목만 수행합니다. 사용자가 아무것도 원하지 않으면 여기서 작업을 종료합니다.
 

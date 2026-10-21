@@ -71,8 +71,9 @@ security add-generic-password -a "$USER" -s "slack-user-token" -w
 | --- | --- |
 | `jissp-planner` | PRD 초안·구조 설계·설계 문서 작성·문서 검토 통합 플래너 |
 | `planner-execute` | 설계 문서 기반 구현 |
-| `jissp-task-manager` | feature 프로젝트·태스크 등록·실행·상태 관리 |
+| `jissp-task-manager` | feature·태스크 등록·실행·상태 관리 |
 | `jissp-task-implement` | `jissp-task-manager run` 전용 태스크 구현 |
+| `jissp-feature-spec-generator` | feature의 완료 태스크 문서를 종합해 언어 중립 최종 Spec 작성 |
 | `jissp-todo-manager` | 프로젝트와 무관한 전역 TODO 관리 |
 | `jissp-architecture-preview` | 설계 적용 전후 Before/After 미리보기 |
 | `jissp-code-analyzer` | 요구사항 기준 읽기 전용 코드 분석 |

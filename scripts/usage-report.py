@@ -39,7 +39,10 @@ IMPL_AGENT = 'jissp-task-implementer'
 IMPL_SKILL = 'jissp-task-implement'
 GUIDELINE = 'planner-execute/guideline.md'
 REVIEW_AGENTS = ('jissp-doc-reviewer', 'jissp-gap-validator', 'jissp-doc-reviewer-report')  # 마지막은 개명 전 이름 (과거 세션 집계용)
-SKILL_ALIASES = {'jissp-task-manager': ('jissp-task-manager-v2',)}  # 개명 전 이름 (과거 세션 집계용)
+SKILL_ALIASES = {
+    'jissp-task-manager': ('jissp-task-manager-v2',),
+    'jissp-feature-spec-generator': ('jissp-project-spec-generator',),
+}  # 개명 전 이름 (과거 세션 집계용)
 REVIEW_BUCKETS = ((0, 0, '0'), (1, 1, '1'), (2, 2, '2'), (3, 4, '3-4'), (5, None, '5+'))
 
 

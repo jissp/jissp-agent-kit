@@ -10,7 +10,7 @@
 | `skill` | `jissp-task-implement` 스킬 (Sonnet) | run 세션 안에서 모델만 바꿔 구현 |
 | `inline` | run 메인 세션 | 기존 방식. `~/jissp-agent-kit/skills/planner-execute/guideline.md` 를 `Read` 로 읽고 직접 구현 |
 
-- 지정: `run [project] [task] --impl agent|skill|inline`
+- 지정: `run [feature] [task] --impl agent|skill|inline`
 - 생략 시 [../config.md](../config.md) frontmatter 의 `default_impl` 을 따릅니다. (값이 없거나 파일이 없으면 `agent`)
 - **Gemini(agy) 환경**: `agent` 는 `invoke_subagent` 로 `TypeName: "jissp-task-implementer"` 를 띄웁니다. 호출 시 모델을 고를 수 없어 Opus/Sonnet 분리는 적용되지 않고, 컨텍스트 분리 효과만 얻습니다. `skill` 은 `jissp-task-implement` 스킬을 같은 계약으로 실행하되, 모델 전환 없이 run 세션의 모델로 구현합니다.
 - 그 밖에 서브에이전트를 지원하지 않는 환경은 `inline` 으로 진행합니다.
@@ -43,7 +43,7 @@
 | `task_dir` | 태스크 디렉토리 경로 |
 | `architecture` | 태스크 `architecture.md` 경로 |
 | `task_docs` | 존재하는 태스크 문서 경로 (`README.md`·`prd.md`·`module-structure.md`·`docs/*`) |
-| `context_docs` | 태스크 컨텍스트에서 이번 범위와 관련 있다고 판단한 선행 태스크·프로젝트 문서 경로 |
+| `context_docs` | 태스크 컨텍스트에서 이번 범위와 관련 있다고 판단한 선행 태스크·feature 문서 경로 |
 | `stage` | 이번에 구현할 §12 단계 (번호·이름) |
 | `parallel_with` | 병렬 그룹으로 동시에 진행 중인 다른 단계 (번호·이름). 동시 실행할 때만 전달합니다 |
 | `owned_files` | `parallel_with` 와 함께만 전달. §11 `단계` 컬럼이 이번 `stage` 인 파일 경로 |

@@ -1,4 +1,4 @@
-# jissp-project-spec-generator 환경 설정
+# jissp-feature-spec-generator 환경 설정
 
 - `batch_size`: 4
 - `keep_tmp_specs`: true
