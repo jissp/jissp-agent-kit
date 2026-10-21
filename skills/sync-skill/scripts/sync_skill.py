@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""jissp-agent-kit/skills 원본을 기준으로 Claude / Gemini 스킬 디렉토리의 링크 상태를 점검·반영합니다.
+"""jissp-agent-kit 원본을 기준으로 Claude / Gemini 스킬 디렉토리와 Claude 서브에이전트 디렉토리의 링크 상태를 점검·반영합니다.
 
 사용법:
-  sync_skill.py check [skill ...]                          # 점검만 (인자 없으면 전체)
-  sync_skill.py apply skill [skill ...] [--side claude|gemini]  # 자동 반영 가능한 항목만 반영
+  sync_skill.py check [skill|subagents ...]                          # 점검만 (인자 없으면 스킬 전체 + 서브에이전트)
+  sync_skill.py apply skill|subagents [...] [--side claude|gemini]   # 자동 반영 가능한 항목만 반영
+
+`subagents` 는 예약 대상명으로, jissp-agent-kit/subagents 전체를 ~/.claude/agents 에 반영합니다. (Claude 전용)
 
 자동 반영 대상: 스킬 디렉토리 생성, 빠진 링크 생성, manifest.json 생성·description 갱신.
 실제 파일·디렉토리, 다른 곳을 가리키는 링크, 원본에 없는 항목은 건드리지 않고 보고만 합니다.
@@ -14,6 +16,9 @@ import re
 import sys
 
 BASE = os.path.expanduser("~/jissp-agent-kit/skills")
+SUBAGENT_SRC = os.path.expanduser("~/jissp-agent-kit/subagents")
+SUBAGENT_DST = os.path.expanduser("~/.claude/agents")
+SUBAGENTS = "subagents"  # check / apply 의 예약 대상명
 SIDES = {
     "claude": {"root": os.path.expanduser("~/.claude/skills"), "skill_file": "SKILL.claude.md"},
     "gemini": {"root": os.path.expanduser("~/.gemini/antigravity-cli/skills"), "skill_file": "SKILL.gemini.md"},
@@ -167,6 +172,70 @@ def apply_skill(skill, sides):
     return done
 
 
+def link_status(path, target, item):
+    """에이전트 쪽 경로 하나가 원본 target 을 가리키는지 판정합니다. 정상이면 None."""
+    if os.path.islink(path):
+        actual = os.readlink(path)
+        if actual != target:
+            return ("WRONG_TARGET", item, f"{actual} (기대: {target})")
+        if not os.path.exists(path):
+            return ("BROKEN", item, actual)
+        return None
+    if os.path.exists(path):
+        return ("NOT_LINK", item, "실제 파일이 있음 (복제본 의심)")
+    return ("MISSING_LINK", item, target)
+
+
+def subagent_entries():
+    """(원본 경로, 에이전트 쪽 상대 경로) 목록. 하위 디렉토리(shared/ 등)는 파일 단위로 링크합니다."""
+    entries = []
+    for name in sorted(os.listdir(SUBAGENT_SRC)):
+        src = os.path.join(SUBAGENT_SRC, name)
+        if name.startswith("."):
+            continue
+        if os.path.isdir(src):
+            for sub in sorted(os.listdir(src)):
+                if not sub.startswith(".") and sub.endswith(".md"):
+                    entries.append((os.path.join(src, sub), os.path.join(name, sub)))
+        elif name.endswith(".md"):
+            entries.append((src, name))
+    return entries
+
+
+def check_subagents():
+    """(status, item, detail, side) 목록을 반환합니다."""
+    if not os.path.isdir(SUBAGENT_SRC):
+        return [("NO_SKILL", "", f"{SUBAGENT_SRC} 없음", "claude")]
+    issues = []
+    expected = set()
+    for src, rel in subagent_entries():
+        expected.add(rel)
+        issue = link_status(os.path.join(SUBAGENT_DST, rel), src, rel)
+        if issue:
+            issues.append(issue + ("claude",))
+    # 원본이 사라졌는데 남아 있는 링크 (원본을 가리키던 끊긴 링크만 — 개인 에이전트는 건드리지 않음)
+    if os.path.isdir(SUBAGENT_DST):
+        for root, dirs, files in os.walk(SUBAGENT_DST):
+            for name in dirs + files:
+                path = os.path.join(root, name)
+                rel = os.path.relpath(path, SUBAGENT_DST)
+                if (os.path.islink(path) and rel not in expected
+                        and os.readlink(path).startswith(SUBAGENT_SRC + os.sep)):
+                    issues.append(("EXTRA", rel, "원본에 없는 서브에이전트를 가리키는 링크", "claude"))
+    return issues
+
+
+def apply_subagents():
+    done = []
+    for status, item, detail, _ in check_subagents():
+        if status == "MISSING_LINK":
+            path = os.path.join(SUBAGENT_DST, item)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            os.symlink(detail, path)
+            done.append(("claude", "LINK", f"{item} -> {detail}"))
+    return done
+
+
 def main(argv):
     if not argv or argv[0] not in ("check", "apply"):
         print(__doc__)
@@ -179,9 +248,10 @@ def main(argv):
         rest = rest[:i] + rest[i + 2:]
 
     if cmd == "check":
-        skills = rest or sorted(d for d in os.listdir(BASE) if os.path.isdir(os.path.join(BASE, d)) and not d.startswith("."))
+        skills = rest or sorted(d for d in os.listdir(BASE) if os.path.isdir(os.path.join(BASE, d)) and not d.startswith(".")) + [SUBAGENTS]
         for skill in skills:
-            for status, item, detail, side in check_skill(skill):
+            issues = check_subagents() if skill == SUBAGENTS else check_skill(skill)
+            for status, item, detail, side in issues:
                 fix = "auto" if status in FIXABLE else "manual"
                 print("\t".join([skill, side, status, fix, item, detail]))
         return 0
@@ -190,7 +260,11 @@ def main(argv):
         print("apply 에는 스킬명이 필요합니다.")
         return 2
     for skill in rest:
-        for side, action, detail in apply_skill(skill, sides):
+        if skill == SUBAGENTS:
+            results = apply_subagents() if "claude" in sides else []
+        else:
+            results = apply_skill(skill, sides)
+        for side, action, detail in results:
             print("\t".join([skill, side, action, detail]))
     return 0
 
