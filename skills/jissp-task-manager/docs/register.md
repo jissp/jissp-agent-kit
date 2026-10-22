@@ -122,7 +122,10 @@
 | 태스크 상태 | 선택지 |
 |---|---|
 | `architecture.md` 가 있음 | 1. 태스크 실행 (`run`) · 2. 나중에 |
-| 그 외 | 1. PRD 작성 (draft, 권장) · 2. 구조 설계 (structure) · 3. 설계 문서 작성 (architecture) · 4. 나중에 |
+| 개요·요구사항 본문은 있으나 `architecture.md` 없음 | 1. 바로 실행 (`run`, 설계 없이 구현) · 2. PRD 작성 (draft) · 3. 구조 설계 (structure) · 4. 설계 문서 작성 (architecture) · 5. 나중에 |
+| 그 외 (작업 문서가 없는 상태) | 1. PRD 작성 (draft, 권장) · 2. 구조 설계 (structure) · 3. 설계 문서 작성 (architecture) · 4. 나중에 |
+
+- 권장안: [SKILL](../SKILL.claude.md) 「작업 요청 (등록 + 실행)」 으로 들어온 경우는 "바로 실행", 그 밖에는 "PRD 작성" 입니다. 단 요구사항이 여러 모듈에 걸치는 큰 작업이면 "바로 실행" 대신 설계 문서 작성을 권장합니다.
 
 - planner 호출 형식: `/jissp-planner [draft|structure|architecture] --task [feature]/[태스크 디렉토리명]`
   - 모드 args는 비워 둡니다. planner가 태스크 모드에서 입력(README·prd.md 등)을 스스로 정합니다.

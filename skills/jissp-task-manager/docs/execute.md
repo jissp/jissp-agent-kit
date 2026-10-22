@@ -43,6 +43,7 @@
    - `architecture.md` 가 있으면 [implement.md](implement.md)를 읽고, 지정된 구현 방식(`--impl agent|skill|inline`, 생략 시 [config.md](../config.md)의 `default_impl`)으로 구현합니다.
      - `inline` 은 `~/jissp-agent-kit/skills/planner-execute/guideline.md` 를 `Read` 로 읽고, 그 「설계 문서 해석」·「구현 단위 규약」·「구현 순서 규약」·「테스트 코드 작성 정책」·「주석 원칙」 을 따라 메인 세션에서 직접 구현합니다.
      - 어느 방식이든 설계 문서 갱신은 guideline의 「설계 문서 갱신 정책」 대신 아래 "완료 전·후 안내" 절차를 따릅니다.
+   - `architecture.md` 가 없으면 [implement.md](implement.md) 4장 「설계 없는 태스크 위임」 을 따릅니다. `agent` 방식이면 `jissp-implementer` 에 위임하고, run 메인 세션은 코드를 직접 고치지 않습니다. (Bash 로 파일을 고치는 것도 포함)
    - 진행 내역·결정 사항은 README.md의 "작업 이력"에 기록합니다.
 4. 작업이 완료되면 task를 완료처리합니다. (아래 절차)
 

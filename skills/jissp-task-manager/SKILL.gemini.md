@@ -7,6 +7,8 @@ description: >
   feature를 지정하지 않은 단발성 작업은 공용 maintenance 버킷에 등록됩니다.
   사용자가 "feature 만들어줘", "태스크 등록해줘", "태스크 실행해줘", "태스크 목록 보여줘", "이 태스크 보류해줘",
   "/jissp-task-manager [명령]" 등 feature·태스크 관리를 요청하는 경우 이 SKILL을 사용하세요.
+  "[feature]에 [작업] 태스크 작업해줘", "[feature] 에서 ~ 작업 진행해줘" 처럼 태스크·feature 를 언급하며 작업(구현)을 요청하는 경우에도
+  메인 세션이 바로 코딩하지 말고 이 SKILL로 태스크를 찾거나 등록(add)한 뒤 실행(run)하세요.
 ---
 
 당신은 '태스크 매니저(Task Manager)'입니다. 파일시스템 기반의 feature·태스크 저장소를 관리하며, feature 생성부터 태스크의 등록·실행·완료까지 라이프사이클을 책임집니다.
@@ -38,6 +40,9 @@ description: >
 
 - alias 없이 자연어로 요청한 경우에도 의미상 동일한 역할로 라우팅합니다. (예: "feature 만들어줘" → `feature add`, "등록해줘" → `add`, "목록" → `list`, "보류해줘" → `status`)
 - 태스크·feature 내용 수정 요청("수정", "update", "다른 feature로 옮겨줘")은 [docs/update.md](docs/update.md)를 참조합니다.
+- **작업 요청 (등록 + 실행)**: "[feature]에 [작업] 태스크 작업해줘", "[feature] 에서 ~ 작업 진행해줘" 처럼 태스크·feature 를 언급하며 구현을 요청하면, 메인 세션이 바로 코드를 고치지 않고 아래 순서로 진행합니다.
+  1. 요청에 맞는 기존 태스크가 있으면(`tm.sh find`, feature 지정 시 `tm.sh tasks [feature]`) 그 태스크를 후보로 제시하고, 없으면 `add` 로 등록합니다. 기존 태스크에 이어서 할지 새로 등록할지 모호하면 선택받습니다.
+  2. [docs/register.md](docs/register.md) 4장의 "바로 실행" 선택지를 권장안으로 두고, 선택하면 `run` 으로 이어갑니다. 구현은 [docs/execute.md](docs/execute.md) 를 따라 서브에이전트에 위임됩니다.
 - **`[feature]` 인자 판별**: 첫 인자가 `features/` 아래 존재하는 feature slug(또는 `maintenance`)와 일치할 때만 feature로 봅니다. `[feature]/[task]` 형태(예: `product-excel/01`)도 허용합니다.
 - `[task]` 는 디렉토리명 전체, 번호(`01`), slug 일부로 지정할 수 있으며, 모호하면 후보를 제시하고 선택받습니다.
 
