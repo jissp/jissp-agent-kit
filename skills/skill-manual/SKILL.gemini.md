@@ -32,6 +32,7 @@ description: >
 | jissp-content-to-requirements | 대화·문서를 요구사항으로 정리 |
 | jissp-planner | PRD·구조·설계 문서 작성·검토 |
 | jissp-slack-inquiry | 슬랙 문의 분석·공유 |
+| jissp-task-auto-register | 개요를 feature·태스크로 분류해 일괄 등록 |
 | jissp-task-manager | feature·태스크 관리 |
 | planner-execute | 설계 문서 기반 구현 |
 
