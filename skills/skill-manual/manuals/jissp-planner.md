@@ -19,6 +19,8 @@ generated_at: 2026-10-21 23:57:23
 
 - 권장 흐름: `init` (최초 1회) → `draft` → `structure` (신규 모듈·큰 구조 변경 시) → `architecture` → `review`
 - 각 모드 완료 후 다음 작업 안내에서 고르면 스킬을 다시 호출하지 않고 이어서 진행합니다.
+- `structure`·`architecture` 는 코드 분석·문서 작성을 서브에이전트(`jissp-design-writer`)에 맡기고, 메인은 요구사항 확인·미결정 사항 질문·확정만 맡습니다. 작은 변경(architecture: 모듈 1~2개 안에서 끝나고 모듈 간 계약 변경 없음 / structure: 적용 대상 비적용인데 진행)은 메인이 직접 작성합니다. `--agent`·`--inline` 으로 강제할 수 있습니다. `revise` 는 항상 메인이 수행합니다.
+- `/flow-diagram` 도식은 미결정 사항(구조는 확정) 정리가 끝난 뒤에 그립니다.
 - `architecture` 는 서로 독립인 모듈이 여럿이면 §12 작업 순서를 병렬 그룹(`2-A`, `2-B`)으로 나눠 작성합니다. 그룹은 `/jissp-task-manager run` 의 `agent` 방식에서 동시에 착수됩니다.
 
 ### 태스크 모드 (`--task`)

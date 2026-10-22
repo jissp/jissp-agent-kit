@@ -70,7 +70,7 @@ model: opus
   - feature가 완료 feature(`[Jissp 문서]/features/_completed/`)에 있으면 문서를 작성·수정하지 않고, `/jissp-task-manager feature status [feature] processing` 으로 재오픈하라고 안내한 뒤 종료합니다.
   - 태스크 `status` 가 `completed` 이면 작성·수정 전에 경고하고 계속할지 확인합니다. (후속 태스크가 이 문서를 선행 컨텍스트로 읽으므로, 완료된 태스크의 계약을 바꾸면 후속 태스크에 영향이 갑니다)
 - **규약 참조**: 태스크 저장 규약은 `~/jissp-agent-kit/skills/jissp-task-manager/docs/structure.md` 가 원본입니다. 태스크 모드 시작 시 이 문서의 **"태스크 README.md 스키마"** 와 **"태스크 컨텍스트"** 절을 `Read` 로 읽습니다. (추측으로 구조를 만들지 않습니다)
-- **컨텍스트 확보**: 각 모드의 코드 분석·작성 단계에 들어가기 전에 "태스크 컨텍스트" 절대로 feature README → feature `docs/` → 선행 태스크 문서 → 태스크 자신의 문서를 읽습니다. 선행 태스크의 계약(인터페이스·스키마)은 이번 문서가 **이미 존재하는 것으로 사용할 대상**이며, 재설계하지 않습니다.
+- **컨텍스트 확보**: 각 모드의 코드 분석·작성 단계에 들어가기 전에 "태스크 컨텍스트" 절대로 feature README → feature `docs/` → 선행 태스크 문서 → 태스크 자신의 문서를 읽습니다. 선행 태스크의 계약(인터페이스·스키마)은 이번 문서가 **이미 존재하는 것으로 사용할 대상**이며, 재설계하지 않습니다. structure·architecture 를 `jissp-design-writer` 에 맡기는 경우에는 메인이 읽지 않고 서브에이전트가 읽습니다. (`modes/delegation.md`)
 - **입력 결정** (모드 args가 비어 있을 때 — 각 가이드의 "args가 비어 있는 경우" 규칙보다 우선)
   | 모드 | 입력 |
   |---|---|
@@ -110,6 +110,7 @@ model: opus
 - `architecture init` 은 이전 호출 방식과의 호환용입니다. init 모드로 라우팅합니다.
 - **모드 args**: 첫 번째 인자(alias)를 제외한 나머지 인자 전체입니다. 가이드 문서에서 "args"라고 부르는 값은 모두 이 모드 args를 뜻합니다. (예: `/jissp-planner architecture revise a.md 필드 추가` → architecture 모드, 모드 args = `revise a.md 필드 추가`)
 - init 을 제외한 모든 모드는 모드 args에 `--task [feature]/[task]` 를 함께 받을 수 있으며, 이 경우 위 "태스크 모드"로 동작합니다.
+- structure·architecture 모드는 모드 args에 `--agent` / `--inline` 을 함께 받을 수 있습니다. 코드 분석·문서 작성을 `jissp-design-writer` 서브에이전트에 맡길지(`agent`) 메인이 직접 할지(`inline`)를 강제합니다. 없으면 각 가이드가 판정합니다. (`modes/delegation.md`)
 - alias는 대소문자를 구분하지 않습니다.
 - **모드 확정 후 해당 모드의 `guide.md` 1개만 `Read` 로 읽고 그 절차를 따릅니다.** 다른 모드의 문서는 읽지 않습니다. (불필요한 컨텍스트 사용 방지) 모드 내 보조 문서는 가이드가 지시하는 시점에만 읽습니다.
 - 가이드 문서 안의 파일 경로(`modes/...`)는 **본 스킬 디렉토리 기준 상대 경로**입니다.

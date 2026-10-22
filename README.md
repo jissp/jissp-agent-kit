@@ -100,6 +100,7 @@ security add-generic-password -a "$USER" -s "slack-user-token" -w
 | 서브에이전트 | 호출하는 곳 | 역할 |
 | --- | --- | --- |
 | `jissp-code-analyst` | `jissp-slack-inquiry` | 요구사항 기준 읽기 전용 코드 분석, 분석 문서 작성 |
+| `jissp-design-writer` | `jissp-planner` structure·architecture | 코드 분석 후 구조·설계 문서 작성 (사용자 확인은 메인이 담당) |
 | `jissp-doc-reviewer` | `jissp-planner` review | PRD·설계 문서·프롬프트의 모순·누락·모호함 검토 (파일 수정 없음) |
 | `jissp-gap-validator` | `jissp-task-manager`, `jissp-planner` | 기준 문서 대비 산출물의 누락을 갭 리포트로 작성 |
 | `jissp-task-implementer` | `jissp-task-manager run` (`agent` 방식) | 설계 문서 단계 단위 태스크 구현 |
