@@ -7,6 +7,7 @@
   python3 usage-report.py --skill planner-execute --args ''
   python3 usage-report.py --detail                         # 실행별 행 출력
   python3 usage-report.py --end human                      # 실행 구간을 다음 사람 입력 직전까지로 제한
+  python3 usage-report.py --all --by week                  # 스킬 구분 없이 모든 요청을 기간별(day/week/month)로 집계
 
 실행 1회 = 스킬 호출부터 다음 슬래시 명령 입력(또는 세션 끝) 직전까지.
   --end human 이면 다음 사람 입력 직전까지. (run 이후 이어진 대화 제외, 대신 텍스트 승인 응답 이후도 잘림)
@@ -24,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 ROOT = os.path.expanduser('~/.claude/projects')
 KST = timezone(timedelta(hours=9))
 
-# $/MTok (input, output, cache read). 캐시 쓰기는 1시간 TTL 기준 input 의 2배로 계산한다.
+# $/MTok (input, output, cache read). 캐시 쓰기는 TTL 별로 input 단가에 배수를 곱해 계산한다.
 PRICES = {
     'claude-fable-5-1': (10, 50, 0.25),
     'claude-opus-5-5': (4, 20, 0.20),
@@ -33,7 +34,8 @@ PRICES = {
     'claude-sonnet-5': (2, 10, 0.20),
     'claude-haiku-5-5': (0.10, 0.50, 0.01),
 }
-CACHE_WRITE_MULTIPLIER = 2
+CACHE_WRITE_1H_MULTIPLIER = 2
+CACHE_WRITE_5M_MULTIPLIER = 1.25  # 서브에이전트는 5분 TTL 캐시를 쓴다.
 
 IMPL_AGENT = 'jissp-task-implementer'
 IMPL_SKILL = 'jissp-task-implement'
@@ -132,6 +134,7 @@ def add_usage(totals, entries, seen):
         bucket['calls'] += 1
         bucket['input'] += usage.get('input_tokens', 0)
         bucket['cache_write'] += usage.get('cache_creation_input_tokens', 0)
+        bucket['cache_write_5m'] += (usage.get('cache_creation') or {}).get('ephemeral_5m_input_tokens', 0)
         bucket['cache_read'] += usage.get('cache_read_input_tokens', 0)
         bucket['output'] += usage.get('output_tokens', 0)
 
@@ -140,7 +143,8 @@ def cost_parts(model, bucket):
     input_price, output_price, read_price = PRICES.get(model, PRICES['claude-opus-5-5'])
     return {
         'input': bucket['input'] * input_price / 1e6,
-        'cache_write': bucket['cache_write'] * input_price * CACHE_WRITE_MULTIPLIER / 1e6,
+        'cache_write': ((bucket['cache_write'] - bucket['cache_write_5m']) * CACHE_WRITE_1H_MULTIPLIER
+                        + bucket['cache_write_5m'] * CACHE_WRITE_5M_MULTIPLIER) * input_price / 1e6,
         'cache_read': bucket['cache_read'] * read_price / 1e6,
         'output': bucket['output'] * output_price / 1e6,
     }
@@ -217,6 +221,57 @@ def collect_runs(skill, args_prefix, since, end_at):
                 'sub_types': sub_types,
             })
     return sorted(runs, key=lambda r: r['start'])
+
+
+def period_of(timestamp, by):
+    moment = datetime.fromisoformat(timestamp.replace('Z', '+00:00')).astimezone(KST)
+    if by == 'week':
+        return (moment - timedelta(days=moment.weekday())).strftime('%Y-%m-%d~')
+    if by == 'month':
+        return moment.strftime('%Y-%m')
+    return moment.strftime('%Y-%m-%d')
+
+
+def collect_all_usage(since, by):
+    """스킬 구분 없이 모든 세션(메인 + 서브에이전트)의 API 호출을 기간별로 집계한다."""
+    usage = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
+    sessions = collections.defaultdict(set)
+    seen = set()  # resume 한 세션은 이전 기록을 복사하므로 message id 로 중복을 제거한다.
+    paths = glob.glob(f'{ROOT}/*/*.jsonl') + glob.glob(f'{ROOT}/*/*/subagents/*.jsonl')
+    for path in paths:
+        is_subagent_file = '/subagents/' in path
+        for entry in load_jsonl(path):
+            timestamp = entry.get('timestamp') or ''
+            if not timestamp or timestamp < since:
+                continue
+            period = period_of(timestamp, by)
+            kind = 'sub' if is_subagent_file or entry.get('isSidechain') else 'main'
+            before = len(seen)
+            add_usage(usage[(period, kind)], [entry], seen)
+            if len(seen) > before and not is_subagent_file:
+                sessions[period].add(entry.get('sessionId') or path)
+    return usage, sessions
+
+
+def print_all_usage(usage, sessions):
+    periods = sorted({period for period, _ in usage})
+    print(f"{'기간(KST)':<12} {'세션':>4} {'호출':>6} {'총 토큰':>9} {'적중률':>6} {'읽기$':>8} {'쓰기$':>8} {'출력$':>8} "
+          f"{'메인$':>8} {'서브$':>8} {'합계$':>8} {'직전 대비':>9}  모델")
+    previous = None
+    for period in periods:
+        main, sub = summarize(usage[(period, 'main')]), summarize(usage[(period, 'sub')])
+        combined = collections.defaultdict(collections.Counter)
+        for kind in ('main', 'sub'):
+            for model, bucket in usage[(period, kind)].items():
+                combined[model].update(bucket)
+        total = summarize(combined)
+        change = f"{(total['cost'] - previous) / previous:+.0%}" if previous else '-'
+        previous = total['cost']
+        print(f"{period:<12} {len(sessions[period]):>4} {total['calls']:>6} {fmt_tokens(total['tokens']):>9} "
+              f"{total['hit_rate']:>6.0%} {total['cost_read']:>8.2f} {total['cost_write']:>8.2f} {total['cost_output']:>8.2f} "
+              f"{main['cost']:>8.2f} {sub['cost']:>8.2f} {total['cost']:>8.2f} {change:>9}  {short_models(combined)}")
+    print('\n세션=메인 API 호출이 있었던 세션 수 / 호출=API 호출 수(메인+서브) / 직전 대비=합계$ 증감률.')
+    print('읽기=캐시 읽기 / 쓰기=캐시 쓰기+비캐시 input / 출력=output. 비용은 API 단가 환산값. 캐시 쓰기는 input 단가×2(1시간 TTL)·×1.25(5분 TTL).')
 
 
 def summarize(usage_by_model):
@@ -316,7 +371,17 @@ def main():
     parser.add_argument('--detail', action='store_true', help='실행별 행 출력')
     parser.add_argument('--end', choices=('slash', 'human'), default='slash',
                         help='실행 구간 끝: slash=다음 슬래시 명령 직전(기본) / human=다음 사람 입력 직전')
+    parser.add_argument('--all', action='store_true', help='스킬 구분 없이 모든 요청을 기간별로 집계')
+    parser.add_argument('--by', choices=('day', 'week', 'month'), default='day', help='--all 의 집계 단위 (기본 day)')
     options = parser.parse_args()
+
+    if options.all:
+        usage, sessions = collect_all_usage(kst_date_to_utc(options.since), options.by)
+        if not usage:
+            print('집계할 요청이 없습니다.')
+            return
+        print_all_usage(usage, sessions)
+        return
 
     runs = collect_runs(options.skill, options.args_prefix, kst_date_to_utc(options.since), options.end)
     if not runs:
@@ -329,7 +394,7 @@ def main():
     print('\n방식: agent=서브에이전트 위임 / skill=구현 스킬 / inline=메인 직접 구현 / -=설계 문서 없는 실행 등')
     print('검토 횟수: 실행 중 jissp-doc-reviewer, jissp-gap-validator 서브에이전트 호출 수 (합산).')
     print('메인$ 분해: 읽기=캐시 읽기 / 쓰기=캐시 쓰기+비캐시 input / 출력=output. 호출=메인 API 호출 수.')
-    print('비용은 API 단가 환산값. 캐시 쓰기는 input 단가×2 로 계산.')
+    print('비용은 API 단가 환산값. 캐시 쓰기는 input 단가×2(1시간 TTL)·×1.25(5분 TTL) 로 계산.')
 
 
 if __name__ == '__main__':
