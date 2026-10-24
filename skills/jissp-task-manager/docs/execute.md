@@ -30,6 +30,10 @@
   - 상태는 그대로 유지합니다. (`processing` 전이 금지)
   - `AskUserQuestion` 으로 작업 문서 작성을 제안합니다: 1. PRD 작성 (draft) · 2. 구조 설계 (structure) · 3. 설계 문서 작성 (architecture) · 4. 종료
   - 선택한 모드는 `/jissp-planner [mode] --task [feature]/[태스크 디렉토리명]` 으로 이 스킬이 대신 호출합니다. 문서 작성이 끝나면 다시 실행할지 묻습니다.
+- **세션 확인**: 이 세션에서 run 전에 다른 작업(PRD·구조·설계 문서 작성, 리뷰, 다른 태스크 run 등)을 진행했다면 새 세션에서 시작할 것을 권고합니다. run 은 태스크 컨텍스트를 문서에서 다시 읽으므로 앞선 대화가 필요 없고, 이어서 진행하면 그 대화가 이후 모든 호출에 실려 비용만 커집니다.
+  - `AskUserQuestion` 으로 묻습니다: 1. 새 세션에서 시작 (권장) — `/clear` 후 `/jissp-task-manager run [feature] [task]` 를 안내하고 종료 · 2. 이 세션에서 이어서 진행
+  - 대화에서 합의했지만 태스크 문서에 반영되지 않은 결정이 있으면, 1번을 고르기 전에 문서에 반영할 수 있도록 그 항목을 함께 알립니다.
+  - run 이 이 세션의 첫 작업이거나, 직전 안내(planner 다음 작업 안내 등)에서 사용자가 이미 이어서 진행을 고른 경우에는 묻지 않습니다.
 
 ## 2. task 실행
 
@@ -82,5 +86,5 @@ task의 처리가 완료된 경우 **사용자에게 검토를 받고**, 문제�
 - 구현 중 계약(인터페이스·스키마)이 `architecture.md` 와 달라졌다면, 후속 태스크가 이 문서를 선행 컨텍스트로 읽으므로 `architecture.md` 를 실제 결과에 맞게 갱신할지 묻습니다.
   - 갱신을 선택하면 달라진 계약을 변경 요청으로 정리해 `/jissp-planner architecture --task [feature]/[task] revise [변경 요청]` 을 이 스킬이 대신 호출합니다. (**완료처리 전에** 진행합니다. 완료 후에는 planner가 문서 수정 시 경고하기 때문)
 - 다음 단계를 안내합니다.
-  - 다음 `wait` 태스크가 있으면: `/jissp-task-manager run [feature]`
+  - 다음 `wait` 태스크가 있으면: 새 세션(`/clear` 후)에서 `/jissp-task-manager run [feature]`
   - 없으면: 다음 태스크 등록(`add [feature] ...`) 또는 모든 태스크가 완료된 경우 feature 완료(`feature status [feature] completed`)
