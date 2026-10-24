@@ -6,19 +6,26 @@ Do **not** infer, assume, or invent any behavior beyond what is explicitly state
 - **Stack**: {{TECH_STACK_SUMMARY}}
 - **Path alias**: {{PATH_ALIAS}}
 - **Base path**: All file paths specified below are **relative to the project root**.
+- **Build & verify**: {{VERIFY_COMMANDS}}. All must pass before reporting a task as done.
 
-# Detailed Rule Documents
+# Agent Rule Protection
 
-Do **not** load the following documents automatically. Read them **on-demand only** when the corresponding task begins
-(e.g., design, implementation, review).
+`AGENTS.md`, `.claude/CLAUDE.md` and everything under `.agents/` (except `.agents/local-docs/` and `.agents/skills/`) are **read-only** for agents.
 
-| Document          | Path                                 | When to Read                                           |
-|-------------------|--------------------------------------|--------------------------------------------------------|
-| Architecture      | `.agents/rules/ARCHITECTURE.md`      | Layer design, event & transaction handling             |
-| Conventions       | `.agents/rules/CONVENTION.md`        | File/class naming, implementation patterns, Swagger    |
-| Platform Overview | `.agents/docs/OVERVIEW.md`           | Platform project responsibilities                     |
-| Tech Stack        | `.agents/docs/TECHSTACK.md`          | Infrastructure & library selection                     |
-| Glossary          | `.agents/docs/GLOSSARY.md`           | Domain terminology check                               |
+- **Never** create, modify, or delete these files unless the user **explicitly** asks to update them.
+- Do **not** update them as a side effect of other work (implementation, refactoring, writing other documents), even if
+  they look outdated or inconsistent with the code.
+- If they seem outdated, **only report** what differs and wait for the user's instruction.
+
+# Core Rules
+
+Follow the existing code for anything not listed here; the surrounding code is the convention reference.
+
+{{CORE_RULES}}
+
+# Glossary
+
+{{GLOSSARY}}
 
 # Clarification & Interview Policy
 

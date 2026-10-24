@@ -1,6 +1,6 @@
 # AI 도구 연동 및 진입점 관리 가이드 (AI Integration Guide)
 
-이 문서는 `{{PROJECT_NAME}}` 프로젝트에서 다양한 AI 도구(Claude Code, Antigravity, Gemini CLI, Cursor 등)를 연동하고, 새로운 AI 진입점(Entrypoint)을 추가·변경·유지보수하기 위한 **개발자/사용자 전용 가이드**입니다.
+이 문서는 `{{PROJECT_NAME}}` 프로젝트에서 다양한 AI 도구(Claude Code, Antigravity 등)를 연동하고, 새로운 AI 진입점(Entrypoint)을 추가·변경·유지보수하기 위한 **개발자/사용자 전용 가이드**입니다.
 
 > [!NOTE]
 > 본 문서는 AI 에이전트의 코딩 지침(규칙)이 아니라, **개발자가 AI 도구를 프로젝트에 연동하고 진입점을 설정할 때 참고하는 가이드**입니다.  
@@ -19,15 +19,14 @@
 │   └── CLAUDE.md              # 🔗 Claude Code 진입점 (`@../AGENTS.md`)
 └── .agents/
     ├── INTEGRATION.md         # 📖 개발자를 위한 AI 연동/운영 가이드 (본 문서)
-    ├── README.md              # 📌 공용 AI 지침 및 On-demand 인덱스
+    ├── README.md              # 📌 공용 AI 지침 및 핵심 규칙
     ├── README.local.md        # 🔒 개인화 로컬 지침 (.gitignore 대상)
-    ├── docs/                  # 📚 프로젝트 도메인/기술 지식
-    └── rules/                 # 📏 공통 코딩 및 아키텍처 규칙
+    └── local-docs/            # 🔒 로컬 전용 문서 (.gitignore 대상)
 ```
 
 ### 핵심 원칙
 1. **단일 진입점 (Single Entrypoint)**: 모든 AI 도구는 루트의 `AGENTS.md`를 시작점으로 인식하도록 구성합니다.
-2. **컨텍스트 분리 및 온디맨드 (On-Demand Loading)**: 기본 규칙(`README.md`)만 최소한으로 로드하고, 세부 아키텍처/컨벤션 문서는 작업 성격에 맞게 AI가 필요할 때 읽도록 분리하여 불필요한 토큰 낭비를 방지합니다.
+2. **최소 규칙 (Minimal Rules)**: 핵심 규칙은 `README.md` 한 곳에 짧게 두고, 그 외 컨벤션은 기존 코드를 기준으로 삼아 문서와 코드가 어긋나지 않게 합니다.
 3. **개인화 규칙 격리**: 개인 작업 선호사항이나 로컬 테스트 지침은 `README.local.md`에 격리하여 Git에 커밋되지 않도록 합니다.
 
 ---
@@ -82,6 +81,38 @@
 
 ---
 
-## 4. 변경 이력 및 마이그레이션 노트 (Changelog & Migration)
+## 4. 문서 추가 (선택)
 
-* **초기 생성**: `jissp-init-agents` 스킬을 통해 멀티 AI 표준 체계 초기화.
+기본 구조에서 `.agents/README.md` 는 다른 문서를 참조하지 않습니다. 문서가 필요해지면 성격에 따라 아래 중 하나로 연결합니다.
+
+### 4.1 작업별 문서 → 스킬 설정에 등록
+
+디렉토리 구조·설계 규칙·모듈 문서처럼 **특정 작업(설계·구현 착수, 리뷰 등)에서만 쓰는 문서**는 README 에 연결하지 않고, 그 작업을 하는 스킬의 설정에 경로를 등록합니다.
+
+- `jissp-planner`: `0-jissp-docs/rules/jissp-planner/config.md` 의 "추가 Rule 문서"·"모듈 문서" (`/jissp-planner init` 으로 생성)
+- `jissp-reviewer`: `0-jissp-docs/rules/jissp-reviewer/review-rules.md` 의 "6. 설계 가이드 문서"
+
+> 스킬 설정은 `0-jissp-docs/` 아래에 있어 커밋되지 않습니다. 문서는 레포에 두고, 등록은 각자 로컬에서 합니다.
+
+### 4.2 공통 문서 → `README.md` 에서 참조
+
+모든 작업에서 알아야 하지만 README 에 넣기엔 긴 근본 정보(도메인 개요, 긴 용어집 등)는 `.agents/docs/` 에 작성하고 README 에 참조 섹션을 추가합니다.
+
+```markdown
+# Detailed Documents
+
+Do **not** load the following documents automatically. Read them **on-demand only** when the corresponding task begins.
+
+| Document | Path                      | When to Read          |
+|----------|---------------------------|-----------------------|
+| Overview | `.agents/docs/OVERVIEW.md` | Domain context check |
+```
+
+- 표의 경로가 실제 파일과 일치하는지 확인합니다.
+- 짧게 적을 수 있는 내용이면 문서를 따로 만들지 말고 README 의 Core Rules·Glossary 에 추가합니다.
+
+---
+
+## 5. 변경 이력 및 마이그레이션 노트 (Changelog & Migration)
+
+* **{{INIT_DATE}} 초기 생성**: `jissp-init-agents` 스킬을 통해 멀티 AI 표준 체계 초기화. (대상 도구: {{TARGET_TOOLS}})
