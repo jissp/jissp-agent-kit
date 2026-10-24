@@ -14,7 +14,6 @@ tools:
   - replace_file_content
   - multi_replace_file_content
   - run_command
-  - command_status
 ---
 
 # 공통 계약 (필수 선행)

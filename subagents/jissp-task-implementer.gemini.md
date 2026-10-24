@@ -13,7 +13,6 @@ tools:
   - find_by_name
   - list_dir
   - run_command
-  - command_status
 ---
 
 # 공통 계약 (필수 선행)

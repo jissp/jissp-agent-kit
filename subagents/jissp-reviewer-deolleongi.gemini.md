@@ -11,7 +11,6 @@ tools:
   - list_dir
   - grep_search
   - run_command
-  - command_status
 ---
 
 # 공통 규칙 (필수 선행)
