@@ -27,14 +27,14 @@ fm_get() { # <file> <key>
 }
 
 fm_set() { # <file> <key> <value> : 키가 없으면 닫는 --- 앞에 추가
-  local tmp; tmp="$(mktemp)"
+  local tmp="${1}.tmp.$$"
   awk -v k="$2" -v v="$3" '
     NR==1 && $0=="---" {in_fm=1; print; next}
     BEGIN { line = (v=="") ? k ":" : k ": " v }
     in_fm && $0=="---" { if (!done) print line; in_fm=0; print; next }
     in_fm { i=index($0,":"); if (i>0 && substr($0,1,i-1)==k) { print line; done=1; next } }
     {print}' "$1" > "$tmp"
-  mv "$tmp" "$1"
+  mv -f "$tmp" "$1"
 }
 
 append_line() { # <file> <heading> <line> : 이력 절(파일의 마지막 절)에 한 줄 추가. 절이 없으면 파일 끝에 만듦
