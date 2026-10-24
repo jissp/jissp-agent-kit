@@ -8,7 +8,7 @@ description:
   프로젝트별 문서 경로·파일명 규칙·설계 Rule·추가 Rule·모듈 문서·설계 문서 예시는 init 모드로 만든 프로젝트 설정 파일로, review 모드의 커스텀 검토 기준은 리뷰 설정 문서(review-config.md)로 지정합니다.
   사용자가 "/jissp-planner [init|draft|prd|structure|architecture|review] [args]" 로 요청하거나,
   아이디어 브레인스토밍·PRD 초안, "구조부터 잡자", 설계 문서 작성, 기획 문서 검토, 플래너 초기화를 요청하는 경우 이 Skill을 사용하세요.
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(date:*), Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(date:*), Agent, SendMessage, Skill, AskUserQuestion
 model: opus
 ---
 
@@ -76,7 +76,7 @@ model: opus
   |---|---|
   | draft | 태스크 `README.md` 의 제목·개요를 개요 입력으로 사용 (본문이 비어 있으면 제목만으로 1단계 시작) |
   | structure | `prd.md` 가 있으면 그 경로, 없으면 `README.md` 본문을 작업 프롬프트로 사용 |
-  | architecture | `prd.md` 가 있으면 그 경로, 없으면 `README.md` 본문을 작업 프롬프트로 사용. `module-structure.md` 가 `상태: 확정` 이면 structure 가이드의 **인계 args** 형식으로 함께 전달된 것으로 간주 |
+  | architecture | `prd.md` 가 있으면 그 경로, 없으면 `README.md` 본문을 작업 프롬프트로 사용. `module-structure.md` 가 `상태: 확정` 이면 구조 문서로 함께 전달된 것으로 간주 (architecture 가이드 B-2의 구조 문서 제약 적용) |
   | review | 태스크 디렉토리에 있는 `prd.md`·`module-structure.md`·`architecture.md` 전부를 검토 대상 문서로 사용 |
   - `README.md` 가 제목만 있어 입력으로 쓸 내용이 없으면(structure·architecture), 작업 범위를 한두 문장으로 받거나 draft 모드를 먼저 진행할지 묻습니다.
   - architecture 입력에서 `module-structure.md` 가 `상태: 초안` 이면 무시하지 말고, 구조 문서를 먼저 확정할지(structure 모드 `revise` 로 전환) / 초안을 참고로만 쓸지 / 무시할지 선택받습니다.
@@ -92,8 +92,8 @@ model: opus
 - **저장 게이트**: 태스크 디렉토리가 이미 존재하므로 적용하지 않습니다.
 - **태스크 README 갱신**: 문서를 저장하거나 수정하면 태스크 `README.md` 의 "문서" 절에 해당 문서를 추가(없는 경우)하고, `updated_at` 을 `date +"%Y-%m-%d %H:%M:%S"` 로 갱신하며, "작업 이력"에 `[문서명] 작성` / `[문서명] 수정 (revise)` 를 한 줄 남깁니다. feature면 feature README "태스크 목록" 표의 `문서` 컬럼도 갱신합니다. 태스크 `status` 는 바꾸지 않습니다.
   - **개요 채우기**: 태스크 README의 "개요"가 비어 있으면(일반 태스크명으로 등록한 경우) 이번에 작성한 문서(PRD 우선)를 2~3문장으로 요약해 "개요"를 채우고, feature면 feature README "태스크 목록" 표의 태스크 설명(`— 설명`)도 같은 요약의 한 구절로 채웁니다. 이미 개요가 있으면 덮어쓰지 않습니다.
-- **모드 전환**: 태스크 모드에서 다른 모드로 전환할 때(각 가이드의 "다음 작업 안내")는 `--task` 를 유지해 같은 태스크 디렉토리에 이어서 작성합니다.
-- **태스크 모드에서 생략하는 안내**: architecture 모드의 "태스크로 등록" 선택지(이미 태스크 문서이므로)는 제시하지 않습니다. 대신 architecture 작성 완료 후 선택지에 **태스크 실행**(`/jissp-task-manager run [feature] [task]`)을 넣습니다.
+- **모드 전환**: 태스크 모드에서 다른 모드로 전환할 때(각 가이드의 "다음 작업 안내")는 `--task` 를 유지해 같은 태스크 디렉토리에 이어서 작성합니다. 외부 스킬(`/jissp-architecture-preview` 등)에는 `--task` 를 붙이지 않고 태스크 디렉토리의 문서 경로만 전달합니다.
+- **태스크 모드에서 생략하는 안내**: architecture 모드의 "작업 착수"(`/planner-execute` — 태스크 상태·README 갱신·완료 검토를 거치지 않으므로)와 "태스크로 등록"(이미 태스크 문서이므로) 선택지는 제시하지 않습니다. 대신 architecture 작성 완료 후 선택지에 **태스크 실행**(`/jissp-task-manager run [feature] [task]`)을 구현 경로로 넣습니다.
 - `--task` 가 없으면 기존대로 `[PRD 문서]`·`[설계 문서]` 디렉토리에 저장합니다.
 
 
@@ -137,9 +137,19 @@ model: opus
 가이드 문서의 "다음 작업 안내"에서 사용자가 다른 모드를 선택하면(예: draft 완료 후 structure 선택), 스킬을 다시 호출하지 않고 **해당 모드의 `guide.md` 를 읽어 안내된 args로 이어서 진행**합니다.
 
 - 표기 `/jissp-planner [alias] [args]` 는 이 모드 전환을 뜻합니다.
-- 태스크 모드(`--task`)에서 전환하면 `--task` 를 그대로 유지합니다.
+- 태스크 모드(`--task`)에서 planner 모드끼리 전환하면 `--task` 를 그대로 유지합니다. (외부 스킬에는 붙이지 않습니다)
 - 전환 시 사전 준비(설정 확인)는 이미 수행했다면 다시 수행하지 않습니다. 단, init 모드를 수행한 직후에는 새로 만든 프로젝트 설정 파일을 다시 읽습니다.
 - 본 스킬 외부 스킬(`/flow-diagram`, `/jissp-architecture-preview`, `/planner-execute`, `/jissp-task-manager`, `/jissp-code-refactoring`, `/jissp-readability-refactoring`)은 가이드에 적힌 대로 해당 스킬을 호출합니다.
+
+# 완료 보고 (모든 모드 공통)
+
+PRD·구조·설계 문서를 새로 저장하거나 수정했으면(서브에이전트가 작성한 경우 포함), **다음 작업 선택지를 묻기 전에 텍스트 응답으로 아래를 먼저 알립니다.** 선택지 UI만 띄우고 끝내지 않습니다. (사용자가 문서를 직접 찾아 열지 않아도 되게 하기 위함)
+
+1. **문서 경로**: 이번에 생성·수정한 문서를 모두 **절대 경로 마크다운 링크**로 적습니다. (예: `[prd.md](/Users/.../tasks/01_xxx/prd.md)` — 클릭하면 바로 열립니다) 상대 경로나 줄인 경로(`tasks/01_.../prd.md`)로 적지 않습니다. 함께 갱신한 문서(태스크 README·feature README 등)는 한 줄로 덧붙입니다.
+2. **상태**: 문서 상태(`초안` / `확정` 등)와 남은 미결정 사항 개수.
+3. **다음 작업 안내**: 가이드의 "다음 작업 안내" 선택지를 한 줄씩 요약하고 권장안을 표시한 뒤 `AskUserQuestion` 으로 묻습니다. 질문 문구에도 대상 문서 파일명을 넣습니다.
+
+- 사용자 확정 게이트(structure S-6 등)에서 확정 여부를 물을 때도 같은 방식으로 문서 경로를 먼저 보여 줍니다.
 
 # 공통 원칙
 

@@ -60,4 +60,4 @@ architecture 모드가 문서 양식의 참고 예시로 읽는 실제 설계 �
 
 review 모드가 적용하는 프로젝트별 리뷰 설정(추가 검토 관점·제외 항목·심각도 조정·추가 기준 문서·실행 옵션)입니다. `init` 모드가 `modes/review/review-config.default.md` 양식으로 생성합니다. 파일이 없으면 스킬 기본 동작으로 검토합니다.
 
-- **경로**: `[공통 Rule 관리 문서]/jissp-planner/review-config.md`
+- **경로**: `[Jissp 문서]/rules/jissp-planner/review-config.md` (프로젝트 설정 파일과 같은 디렉토리)
