@@ -4,6 +4,7 @@ This file is **mandatory reading** and **must be followed without exception**.
 Do **not** infer, assume, or invent any behavior beyond what is explicitly stated.
 
 - **Stack**: {{TECH_STACK_SUMMARY}}
+- **Path alias**: {{PATH_ALIAS}}
 - **Base path**: All file paths specified below are **relative to the project root**.
 
 # Detailed Rule Documents

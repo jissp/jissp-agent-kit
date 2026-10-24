@@ -15,6 +15,8 @@
 ```text
 {{PROJECT_NAME}}/
 ├── AGENTS.md                  # 🎯 [모든 AI의 최상위 단일 진입점 허브]
+├── .claude/
+│   └── CLAUDE.md              # 🔗 Claude Code 진입점 (`@../AGENTS.md`)
 └── .agents/
     ├── INTEGRATION.md         # 📖 개발자를 위한 AI 연동/운영 가이드 (본 문서)
     ├── README.md              # 📌 공용 AI 지침 및 On-demand 인덱스
@@ -43,7 +45,7 @@
   ```
 
 ### 2.2 Claude Code
-* **진입점 감지**: Claude Code는 기본적으로 루트의 `CLAUDE.md` 또는 글로벌 설정을 탐색합니다.
+* **진입점 감지**: Claude Code는 프로젝트의 `CLAUDE.md` 또는 `.claude/CLAUDE.md` 를 자동으로 읽습니다. 이 프로젝트는 `.claude/CLAUDE.md` 를 사용합니다.
 * **진입점 섹션**: `AGENTS.md` 내 `## claude` 섹션의 `@` 임포트 문법을 참조합니다.
   ```markdown
   ## claude
@@ -52,12 +54,18 @@
   @./.agents/README.local.md
   ```
 * **연동 방법**:
-  - Claude Code가 `CLAUDE.md`만을 요구하는 버전일 경우, 프로젝트 루트에 심볼릭 링크를 생성하거나 단일 임포트 파일을 둡니다:
-    ```bash
-    ln -s AGENTS.md CLAUDE.md
+  - `.claude/CLAUDE.md` 를 실제 파일로 두고, 내용은 `AGENTS.md` 임포트 한 줄만 작성합니다. (커밋 대상)
+    ```markdown
+    @../AGENTS.md
     ```
+  - 루트에 `CLAUDE.md` 를 만들거나 `AGENTS.md` 를 심볼릭 링크로 연결하지 않습니다.
 
-### 2.3 Cursor / Windsurf
+### 2.3 Gemini CLI (Legacy)
+* **배경**: 과거 `gemini-cli`는 `AGENTS.md`를 기본 탐색하지 않아 `GEMINI.md`를 루트에 두거나 플래그로 주입해야 했습니다.
+* **현재 상태**: Antigravity(agy)가 `AGENTS.md`를 네이티브로 지원하므로 별도 진입점 파일을 두지 않습니다.
+  - 꼭 필요하면 루트 `GEMINI.md`를 로컬에서만 만들고 `.git/info/exclude`에 `/GEMINI.md` 로 등록해 커밋되지 않게 합니다.
+
+### 2.4 Cursor / Windsurf
 * **진입점 파일**: Cursor(`.cursorrules` 또는 `.cursor/rules/`), Windsurf(`.windsurfrules`)
 * **연동 방법**:
   ```text
