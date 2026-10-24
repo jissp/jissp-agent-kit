@@ -134,9 +134,12 @@ python3 ~/jissp-agent-kit/scripts/usage-report.py                               
 python3 ~/jissp-agent-kit/scripts/usage-report.py --since 2026-10-17             # 기간 제한
 python3 ~/jissp-agent-kit/scripts/usage-report.py --skill planner-execute --args ''
 python3 ~/jissp-agent-kit/scripts/usage-report.py --detail                       # 실행별 행 출력
+python3 ~/jissp-agent-kit/scripts/usage-report.py --end human                    # 실행 구간을 다음 사람 입력 직전까지로 제한
+python3 ~/jissp-agent-kit/scripts/usage-report.py --all --by week                # 스킬 구분 없이 모든 요청을 기간별(day/week/month)로 집계
 ```
 
-스킬명을 바꾼 경우 개명 전 이름의 실행도 함께 집계됩니다. (`SKILL_ALIASES`)
+- 스킬명을 바꾼 경우 개명 전 이름의 실행도 함께 집계됩니다. (`SKILL_ALIASES`)
+- 비용은 API 단가 환산값이며 구독 요금제의 실제 청구액이 아닙니다. 캐시 쓰기는 TTL 별 단가(1시간 ×2, 5분 ×1.25)로 계산합니다.
 
 ## 보안 주의사항
 
