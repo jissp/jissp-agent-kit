@@ -51,7 +51,9 @@
    - 사용자가 선택하면 작성된 PRD 문서 경로를 모드 args로 하여 architecture 모드로 전환합니다.
 4. **종료**: 사용자가 모두 원하지 않으면 여기서 작업을 종료합니다.
 
-> review 모드를 먼저 수행한 경우, 검토·수정이 끝난 뒤 이어서 structure 또는 architecture 모드 진행 여부를 다시 물어봅니다.
+- **태스크 모드(`--task`)** 에서는 1~3번 선택지 설명에 `/jissp-planner [review|structure|architecture] --task [feature]/[task]` 명령어와 `/clear` 후 새 세션에서 시작하라는 권고를 함께 적습니다. 선택하면 그 명령어를 이 세션에서 실행합니다. (SKILL.md "태스크 모드" 「다음 작업 안내 (새 세션 권고)」)
+
+> review 모드를 먼저 수행한 경우, 검토·수정이 끝난 뒤 이어서 structure 또는 architecture 모드 진행 여부를 다시 물어봅니다. (태스크 모드에서는 review 모드의 A-8이 안내합니다)
 
 # 입력받는 요구사항
 

@@ -166,6 +166,8 @@ structure 모드는 **구조를 새로 잡거나 바꾸는 작업**에만 적용
    → 구조 문서 경로를 모드 args로 하여 review 모드(`/jissp-planner review`)로 전환합니다.
 3. **종료** — 사용자가 원하지 않으면 여기서 작업을 종료합니다.
 
+- **태스크 모드(`--task`)** 에서는 1·2번 선택지 설명에 `/jissp-planner architecture --task [feature]/[task]`·`/jissp-planner review --task [feature]/[task]` 명령어와 `/clear` 후 새 세션에서 시작하라는 권고를 함께 적습니다. 선택하면 그 명령어를 이 세션에서 실행하며, 아래 인계 args는 쓰지 않습니다. (architecture 모드가 확정된 `module-structure.md` 를 구조 문서로 받으므로 — SKILL.md "태스크 모드" 「입력 결정」·「다음 작업 안내 (새 세션 권고)」)
+
 ### 인계 args (architecture 모드 전환 시 그대로 사용)
 
 아래 형식으로 PRD(또는 작업 프롬프트)와 구조 문서 경로를 함께 전달합니다. 구조 문서를 확정된 제약으로 따르는 규칙은 architecture 가이드 B-2가 정의하므로 여기서 다시 지시하지 않습니다. `[ ]` 부분만 실제 값으로 치환합니다.
