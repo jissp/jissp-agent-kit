@@ -1,0 +1,4 @@
+{
+  "claude": { "event": "PreToolUse", "matcher": "Bash", "timeout": 10 },
+  "gemini": { "event": "BeforeTool", "matcher": "run_shell_command", "timeout": 10000 }
+}

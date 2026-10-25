@@ -1,6 +1,6 @@
 # jissp-agent-kit
 
-Claude Code 와 Gemini(안티그라비티)가 **함께 쓰는 스킬·서브에이전트 원본**을 한곳에서 관리하는 저장소입니다.
+Claude Code 와 Gemini(안티그라비티)가 **함께 쓰는 스킬·서브에이전트·hook 원본**을 한곳에서 관리하는 저장소입니다.
 
 각 에이전트의 스킬 디렉토리에는 실제 파일을 두지 않고, 이 저장소의 원본을 가리키는 **심볼릭 링크**만 둡니다. 원본을 한 번 고치면 양쪽에 바로 반영됩니다.
 
@@ -13,7 +13,8 @@ jissp-agent-kit/
 │   ├── SKILL.gemini.md        # Gemini 용 (Claude 전용 frontmatter 제거)
 │   └── docs/ · scripts/ ...   # 보조 리소스
 ├── subagents/                 # 서브에이전트 ([name].claude.md / [name].gemini.md, shared/ 공용 문서)
-├── docs/skill-promotion-guide.md   # 디렉토리 구조·링크 규칙·manifest 형식
+├── hooks/[name]/              # hook (claude.sh / gemini.sh + hook.json 등록 설정)
+├── docs/skill-promotion-guide.md   # 디렉토리 구조·링크 규칙·manifest 형식·hook 등록
 ├── project-mapping-table.example.md  # 프로젝트 별칭 매핑 예시
 ├── jissp-document.md          # 프로젝트별 문서 디렉토리(0-jissp-docs) 규칙
 ├── databases/                 # 스킬 런타임 데이터 (구조는 databases/README.md, 데이터는 git 제외)
@@ -44,7 +45,7 @@ Claude Code 를 새로 열고 실행합니다.
 /sync-skill
 ```
 
-빠진 링크를 스킬별로 보여주면, 연결할 스킬을 고릅니다. 서브에이전트도 `subagents` 항목으로 함께 연결됩니다. (Claude: `~/.claude/agents`, Gemini: `~/.gemini/config/agents`) 이후 원본에 스킬·서브에이전트를 추가하거나 description 을 바꿨을 때도 `/sync-skill` 로 반영합니다.
+빠진 링크를 스킬별로 보여주면, 연결할 스킬을 고릅니다. 서브에이전트도 `subagents` 항목으로 함께 연결됩니다. (Claude: `~/.claude/agents`, Gemini: `~/.gemini/config/agents`) hook 은 `hooks` 항목으로 각 에이전트 `settings.json` 에 등록됩니다. 이후 원본에 스킬·서브에이전트·hook 을 추가하거나 description 을 바꿨을 때도 `/sync-skill` 로 반영합니다.
 
 - 한쪽 에이전트에만 쓰는 스킬은 고를 때 Claude / Gemini 중 한쪽만 선택합니다.
 - 링크 구조와 규칙은 [docs/skill-promotion-guide.md](docs/skill-promotion-guide.md) 를 참고하세요.

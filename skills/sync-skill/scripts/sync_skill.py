@@ -2,21 +2,26 @@
 """jissp-agent-kit 원본을 기준으로 Claude / Gemini 스킬 디렉토리와 Claude 서브에이전트 디렉토리의 링크 상태를 점검·반영합니다.
 
 사용법:
-  sync_skill.py check [skill|subagents ...]                          # 점검만 (인자 없으면 스킬 전체 + 서브에이전트)
-  sync_skill.py apply skill|subagents [...] [--side claude|gemini]   # 자동 반영 가능한 항목만 반영
+  sync_skill.py check [skill|subagents|hooks ...]                          # 점검만 (인자 없으면 스킬 전체 + 서브에이전트 + hooks)
+  sync_skill.py apply skill|subagents|hooks [...] [--side claude|gemini]   # 자동 반영 가능한 항목만 반영
 
 `subagents` 는 예약 대상명으로, jissp-agent-kit/subagents 전체를 반영합니다.
   <name>.claude.md → ~/.claude/agents/<name>.md (+ shared/ 공용 문서)
   <name>.gemini.md → ~/.gemini/config/agents/<name>.md
 
+`hooks` 는 예약 대상명으로, jissp-agent-kit/hooks 전체를 각 에이전트 settings.json 에 등록합니다.
+  <name>/claude.sh → ~/.claude/settings.json hooks (<name>/hook.json 의 claude 이벤트·matcher)
+  <name>/gemini.sh → ~/.gemini/settings.json hooks (<name>/hook.json 의 gemini 이벤트·matcher)
+
 자동 반영 대상: 스킬 디렉토리 생성, 빠진 링크 생성, 저장소 안의 옛 위치를 가리키는 링크 재연결,
-manifest.json 생성·description 갱신.
+manifest.json 생성·description 갱신, settings.json 에 빠진 hook 등록 추가.
 실제 파일·디렉토리, 다른 곳을 가리키는 링크, 원본에 없는 항목은 건드리지 않고 보고만 합니다.
 """
 import json
 import os
 import re
 import sys
+import tempfile
 
 KIT_ROOT = os.path.expanduser("~/jissp-agent-kit")
 BASE = os.path.join(KIT_ROOT, "skills")
@@ -27,6 +32,13 @@ SUBAGENT_SIDES = {
     "gemini": {"root": os.path.expanduser("~/.gemini/config/agents"), "suffix": ".gemini.md", "shared": False},
 }
 SUBAGENT_SUFFIXES = tuple(c["suffix"] for c in SUBAGENT_SIDES.values())
+HOOK_SRC = os.path.join(KIT_ROOT, "hooks")
+HOOKS = "hooks"  # check / apply 의 예약 대상명
+HOOK_META = "hook.json"  # 쪽별 등록 이벤트·matcher·timeout
+HOOK_SIDES = {
+    "claude": {"settings": os.path.expanduser("~/.claude/settings.json"), "script": "claude.sh"},
+    "gemini": {"settings": os.path.expanduser("~/.gemini/settings.json"), "script": "gemini.sh"},
+}
 SIDES = {
     "claude": {"root": os.path.expanduser("~/.claude/skills"), "skill_file": "SKILL.claude.md"},
     "gemini": {"root": os.path.expanduser("~/.gemini/antigravity-cli/skills"), "skill_file": "SKILL.gemini.md"},
@@ -38,7 +50,7 @@ MANIFEST_INSTRUCTIONS = (
 )
 
 # 자동 반영 가능한 상태
-FIXABLE = {"MISSING_DIR", "MISSING_LINK", "STALE_LINK", "MANIFEST_MISSING", "MANIFEST_STALE"}
+FIXABLE = {"MISSING_DIR", "MISSING_LINK", "STALE_LINK", "MANIFEST_MISSING", "MANIFEST_STALE", "MISSING_HOOK"}
 
 
 def read_description(skill_md_path):
@@ -256,6 +268,139 @@ def apply_subagents(sides):
     return done
 
 
+def hook_command(script):
+    """settings.json 에 적을 command. 홈 아래 경로는 PC 마다 같도록 ~/ 형태로 적습니다."""
+    home = os.path.expanduser("~")
+    return "~/" + os.path.relpath(script, home) if script.startswith(home + os.sep) else script
+
+
+def command_path(command):
+    """등록된 command 문자열이 실행하는 스크립트의 절대 경로."""
+    parts = (command or "").split()
+    return os.path.normpath(os.path.expanduser(parts[0])) if parts else ""
+
+
+def load_settings(path):
+    """(settings dict, 에러 메시지). 파일이 없으면 빈 설정으로 봅니다."""
+    if not os.path.exists(path):
+        return {}, None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f), None
+    except (json.JSONDecodeError, OSError) as e:
+        return None, str(e)
+
+
+def registered_hooks(settings):
+    """settings 의 (event, matcher, command 절대 경로) 목록."""
+    found = []
+    for event, groups in (settings.get("hooks") or {}).items():
+        if not isinstance(groups, list):
+            continue
+        for group in groups:
+            for h in group.get("hooks") or []:
+                found.append((event, group.get("matcher"), command_path(h.get("command"))))
+    return found
+
+
+def hook_entries(side):
+    """(hook 이름, 원본 스크립트 경로, 등록 설정 또는 None, 문제 상태 또는 None) 목록."""
+    entries = []
+    for name in sorted(os.listdir(HOOK_SRC)):
+        src_dir = os.path.join(HOOK_SRC, name)
+        if name.startswith(".") or not os.path.isdir(src_dir):
+            continue
+        script = os.path.join(src_dir, HOOK_SIDES[side]["script"])
+        meta_path = os.path.join(src_dir, HOOK_META)
+        if not os.path.isfile(meta_path):
+            entries.append((name, script, None, ("NONSTANDARD", f"{HOOK_META} 가 없는 비표준 구조")))
+            continue
+        try:
+            with open(meta_path, encoding="utf-8") as f:
+                conf = json.load(f).get(side)
+        except (json.JSONDecodeError, OSError) as e:
+            entries.append((name, script, None, ("MANIFEST_INVALID", f"{HOOK_META}: {e}")))
+            continue
+        if not conf or not os.path.isfile(script):
+            entries.append((name, script, None, ("NO_SOURCE", f"원본에 이 에이전트용 {HOOK_SIDES[side]['script']} 또는 {HOOK_META} 설정이 없음")))
+            continue
+        if not os.access(script, os.X_OK):
+            entries.append((name, script, conf, ("NOT_EXECUTABLE", f"{script} 에 실행 권한이 없음")))
+            continue
+        entries.append((name, script, conf, None))
+    return entries
+
+
+def check_hooks(sides=None):
+    """(status, item, detail, side) 목록을 반환합니다."""
+    if not os.path.isdir(HOOK_SRC):
+        return [("NO_SKILL", "", f"{HOOK_SRC} 없음", "-")]
+    issues = []
+    for side in sides or HOOK_SIDES:
+        settings_path = HOOK_SIDES[side]["settings"]
+        settings, err = load_settings(settings_path)
+        if err:
+            issues.append(("SETTINGS_INVALID", os.path.basename(settings_path), f"{settings_path}: {err}", side))
+            continue
+        registered = registered_hooks(settings)
+        expected = set()
+        for name, script, conf, problem in hook_entries(side):
+            expected.add(os.path.normpath(script))
+            if problem:
+                issues.append((problem[0], name, problem[1], side))
+                continue
+            matches = [(e, m) for e, m, p in registered if p == os.path.normpath(script)]
+            if not matches:
+                issues.append(("MISSING_HOOK", name, f"{conf['event']} / {conf.get('matcher', '')} -> {hook_command(script)}", side))
+            elif (conf["event"], conf.get("matcher")) not in matches:
+                actual = ", ".join(f"{e} / {m}" for e, m in matches)
+                issues.append(("HOOK_MISMATCH", name, f"{actual} 에 등록됨 (기대: {conf['event']} / {conf.get('matcher')})", side))
+        # 원본이 사라졌는데 남아 있는 등록 (이 저장소의 hooks 를 가리키는 것만)
+        for event, matcher, path in registered:
+            if path.startswith(HOOK_SRC + os.sep) and path not in expected:
+                issues.append(("EXTRA", os.path.relpath(path, HOOK_SRC), f"원본에 없는 hook 등록 ({event} / {matcher})", side))
+    return issues
+
+
+def write_json_atomic(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".sync_skill.")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    with open(tmp, encoding="utf-8") as f:
+        json.load(f)  # 파싱 검증
+    if os.path.exists(path):
+        os.chmod(tmp, os.stat(path).st_mode & 0o777)
+    os.replace(tmp, path)
+
+
+def apply_hooks(sides):
+    """빠진 hook 등록만 settings.json 에 추가합니다. 기존 등록은 고치거나 지우지 않습니다."""
+    done = []
+    for side in sides:
+        missing = {item for status, item, _, s in check_hooks([side]) if s == side and status == "MISSING_HOOK"}
+        if not missing:
+            continue
+        settings_path = HOOK_SIDES[side]["settings"]
+        settings, _ = load_settings(settings_path)
+        for name, script, conf, _ in hook_entries(side):
+            if name not in missing:
+                continue
+            entry = {"type": "command", "command": hook_command(script)}
+            if "timeout" in conf:
+                entry["timeout"] = conf["timeout"]
+            groups = settings.setdefault("hooks", {}).setdefault(conf["event"], [])
+            group = next((g for g in groups if g.get("matcher") == conf.get("matcher")), None)
+            if group is None:
+                group = {"matcher": conf["matcher"], "hooks": []} if "matcher" in conf else {"hooks": []}
+                groups.append(group)
+            group.setdefault("hooks", []).append(entry)
+            done.append((side, "HOOK", f"{name}: {conf['event']} / {conf.get('matcher', '')} -> {entry['command']}"))
+        write_json_atomic(settings_path, settings)
+    return done
+
+
 def main(argv):
     if not argv or argv[0] not in ("check", "apply"):
         print(__doc__)
@@ -268,9 +413,14 @@ def main(argv):
         rest = rest[:i] + rest[i + 2:]
 
     if cmd == "check":
-        skills = rest or sorted(d for d in os.listdir(BASE) if os.path.isdir(os.path.join(BASE, d)) and not d.startswith(".")) + [SUBAGENTS]
+        skills = rest or sorted(d for d in os.listdir(BASE) if os.path.isdir(os.path.join(BASE, d)) and not d.startswith(".")) + [SUBAGENTS, HOOKS]
         for skill in skills:
-            issues = check_subagents(sides) if skill == SUBAGENTS else check_skill(skill)
+            if skill == SUBAGENTS:
+                issues = check_subagents(sides)
+            elif skill == HOOKS:
+                issues = check_hooks(sides)
+            else:
+                issues = check_skill(skill)
             for status, item, detail, side in issues:
                 fix = "auto" if status in FIXABLE else "manual"
                 print("\t".join([skill, side, status, fix, item, detail]))
@@ -282,6 +432,8 @@ def main(argv):
     for skill in rest:
         if skill == SUBAGENTS:
             results = apply_subagents(sides)
+        elif skill == HOOKS:
+            results = apply_hooks(sides)
         else:
             results = apply_skill(skill, sides)
         for side, action, detail in results:

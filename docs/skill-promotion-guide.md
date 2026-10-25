@@ -188,3 +188,32 @@ jissp-agent-kit/subagents/
 ### 연결
 
 링크는 직접 만들지 않고 `/sync-skill subagents` (또는 `sync_skill.py apply subagents`) 로 반영합니다. 원본 파일명이 바뀌어 저장소 안의 옛 위치를 가리키는 링크도 함께 다시 연결됩니다.
+
+## 7. Hook
+
+hook 은 에이전트 쪽에 링크를 두지 않고, 각 에이전트 `settings.json` 의 `hooks` 에 **저장소 경로의 스크립트를 직접 등록**합니다.
+
+### 디렉토리 구조
+
+```
+jissp-agent-kit/hooks/[name]/
+├── claude.sh      ← Claude Code 용 (실행 권한 필요)
+├── gemini.sh      ← Gemini 용 (실행 권한 필요)
+└── hook.json      ← 쪽별 등록 이벤트·matcher·timeout
+```
+
+```json
+{
+  "claude": { "event": "PreToolUse", "matcher": "Bash", "timeout": 10 },
+  "gemini": { "event": "BeforeTool", "matcher": "run_shell_command", "timeout": 10000 }
+}
+```
+
+- 등록 위치: Claude `~/.claude/settings.json`, Gemini `~/.gemini/settings.json`
+- command 는 `~/jissp-agent-kit/hooks/[name]/[side].sh` 형태로 적어 PC 마다 같게 둡니다.
+- `timeout` 단위는 Claude 초, Gemini 밀리초입니다.
+- 한쪽 에이전트에서만 쓰는 hook 은 해당 쪽 스크립트와 `hook.json` 항목만 둡니다. 다른 쪽은 `NO_SOURCE` 로 표시됩니다.
+
+### 연결
+
+`/sync-skill hooks` (또는 `sync_skill.py apply hooks`) 로 빠진 등록만 추가합니다. 같은 이벤트에 같은 matcher 그룹이 있으면 그 그룹에 덧붙이고, 없으면 새 그룹을 만듭니다. 이미 있는 등록은 고치거나 지우지 않습니다.
